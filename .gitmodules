@@ -1,0 +1,3 @@
+[submodule "libs/pathfinding"]
+	path = libs/pathfinding
+	url = https://github.com/brean/python-pathfinding
