@@ -13,6 +13,11 @@ GOLD_ORE = ((1, 32), (6, 8), 2.5, "GOLD_ORE")
 REDSTONE_ORE = ((1, 24), (3, 8), 2, "REDSTONE_ORE")
 DIAMOND_ORE = ((1, 16), (4, 8), 0.3, "DIAMOND_ORE")
 
+#Holds ores spawning naturally in all biomes
+NATURAL_ORES = [COAL_ORE, IRON_ORE, LAPIS_LAZULI_ORE, GOLD_ORE, REDSTONE_ORE, DIAMOND_ORE]
+
+
+
 # Cave size settings
 WEIRDNESS = 0  # How random should the caves be? Lower values = short but very twisty: high values = long but very straight: constrained to between -1 and 1
 
@@ -78,7 +83,7 @@ class BaseNoise:
     period = len(permutation)
 
     # Double permutation array so we don't need to wrap
-    permutation = permutation * 2
+    permutation *= 2
 
     randint_function = randint
 
@@ -351,6 +356,6 @@ class WorldGenerator(SimplexNoise):
                 await chunk.addNewBlock(x, dirt, z, BasicClasses.Block(x, dirt, z, "DIRT", {}))
             await chunk.addNewBlock(x, y, z, BasicClasses.Block(x, y, z, "GRASS_BLOCK", {}))  # Generate grass at the top layer
             for height in range(1, y+1):  # Randomly add ores
-                for ore in [COAL_ORE, IRON_ORE, LAPIS_LAZULI_ORE, REDSTONE_ORE, GOLD_ORE, DIAMOND_ORE]:
+                for ore in NATURAL_ORES:
                     if scaleNoise(noise, (1, 100)) < float(ore[2]):
                         await chunk.addNewBlock(x, height, z, BasicClasses.Block(x, height, z, ore[3]))
