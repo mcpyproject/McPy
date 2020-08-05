@@ -19,6 +19,11 @@ DIAMOND_ORE = TerrainFeature.OreFeature("DIAMOND_ORE", 3, 0, 16, 4, 8)
 GENERATORS = [COAL_ORE, IRON_ORE, LAPIZ_ORE, GOLD_ORE, REDSTONE_ORE, DIAMOND_ORE]
 
 
+#Holds ores spawning naturally in all biomes
+NATURAL_ORES = [COAL_ORE, IRON_ORE, LAPIS_LAZULI_ORE, GOLD_ORE, REDSTONE_ORE, DIAMOND_ORE]
+
+
+
 # Cave size settings
 WEIRDNESS = 0  # How random should the caves be? Lower values = short but very twisty: high values = long but very straight: constrained to between -1 and 1
 
@@ -357,5 +362,6 @@ class WorldGenerator(SimplexNoise):
                 await chunk.addNewBlock(x, dirt, z, BasicClasses.Block(x, dirt, z, "DIRT", {}))
             await chunk.addNewBlock(x, y, z, BasicClasses.Block(x, y, z, "GRASS_BLOCK", {}))  # Generate grass at the top layer
             for height in range(1, y+1):  # Randomly add ores
+
                 for gen in GENERATORS:
                     await gen.generation_attempt(scaleNoise(noise, (1, 100)) , chunk, x, height, z, False)
