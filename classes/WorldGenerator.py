@@ -20,7 +20,8 @@ OAK_TREE = TerrainFeature.AbstractTreeGenerator("OAK_LOG", "OAK_LEAVES", 5.0, 4,
 BIRCH_TREE = TerrainFeature.AbstractTreeGenerator("BIRCH_LOG", "BIRCH_LEAVES", 5.0, 5, 8)
 
 #Holds stuff spawning naturally on world Generation - like trees or ores
-GENERATORS = [COAL_ORE, IRON_ORE, LAPIZ_ORE, GOLD_ORE, REDSTONE_ORE, DIAMOND_ORE, OAK_TREE, BIRCH_TREE]
+GENERATORS: [TerrainFeature.AbstractTerrainFeature] = [COAL_ORE, IRON_ORE, LAPIZ_ORE,
+           GOLD_ORE, REDSTONE_ORE, DIAMOND_ORE, OAK_TREE, BIRCH_TREE]
 
 
 # Cave size settings
@@ -344,6 +345,7 @@ class SimplexNoise(BaseNoise):
 
 
 class WorldGenerator(SimplexNoise):
+    
     async def generateNewChunk(self, x, y, z, width, height, region):
         positions = []
         for blockX in range(1, width):
@@ -352,8 +354,15 @@ class WorldGenerator(SimplexNoise):
                 # generate everything else
                 blockY = scaleNoise(bY, (63, 80)) # Scale the noise to be between min-max y value
                 positions.append((blockX, blockY, blockZ))
-        chunk = BasicClasses.Chunk(x, y, z, None, region, width, height)
+        self._regenerate_chunk(x, y, z, region, positions,
+            BasicClasses.Chunk(x, y, z, None, region, width, height))
+
+    async def _regenerate_chunk(self, x, y, z, region, positions, chunk):
         for x, y, z in positions:
+            if y < chunk.height*chunk.yPos:
+                continue
+            if y > chunk.height*(chunk.yPos+1)-1:
+                break
             noise = self.noise3(x, y, z)
             for stone in range(y-6, 1):  # Generate stone from 6 below the top layer, to y=1
                 await chunk.addNewBlock(x, stone, z, BasicClasses.Block(x, stone, z, "STONE", {}))
@@ -362,6 +371,6 @@ class WorldGenerator(SimplexNoise):
             await chunk.addNewBlock(x, y, z, BasicClasses.Block(x, y, z, "GRASS_BLOCK", {}))  # Generate grass at the top layer
             for height in range(1, y-6):  # Randomly add ores
                 for gen in GENERATORS:
-                    await gen.generation_attempt(scaleNoise(noise, (1, 100)) , chunk, x, height, z, False)
+                    await gen.generation_attempt(region, scaleNoise(noise, (1, 100)) , chunk, x, height, z, False)
             for gen in GENERATORS:
-                await gen.generation_attempt(scaleNoise(noise, (1, 100)), chunk, x, y + 1, z, True)
+                await gen.generation_attempt(region, scaleNoise(noise, (1, 100)), chunk, x, y + 1, z, True)
