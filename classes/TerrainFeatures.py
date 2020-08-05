@@ -9,13 +9,14 @@ def _generate_block_unsafely(chunk, chunkpos: [int, int, int], pos: [int, int, i
     except:
         return False
 
-def _generate_block(chunk, chunkpos: [int, int, int], material: str):
+def _generate_block(region: BasicClasses.Region, chunk, chunkpos: [int, int, int], material: str):
     """Generates a block safely (Errors may however still occour) by going to a nearby chunk
      If the chunkpos are out of bounds. However, this function uses up more resources"""
     if (chunkpos[0] < 0 or chunkpos[0] > 15 or
        chunkpos[1] < 0 or chunkpos [1] > 15 or
        chunkpos [2] < 0 or chunkpos[2] > 15):
         pass
+        #region.getChunk() is borked
         #walk to the correct chunk
         #c = [chunk.xPos + chunkpos[0]/16, chunk.yPos + chunkpos[1]/16, chunk.zPos + chunkpos[2]/16]
         #this is where we should load the correct chunk
@@ -35,7 +36,7 @@ def _is_air (chunk, x: int, y: int, z: int):
 
 class AbstractTerrainFeature:
     
-    def generation_attempt(self, random: float, chunk, chunk_x: int, chunk_y: int, chunk_z: int, is_top_layer: bool):
+    def generation_attempt(self, chunk_region: BasicClasses.Region, random: float, chunk, chunk_x: int, chunk_y: int, chunk_z: int, is_top_layer: bool):
         pass
 
 class OreFeature(AbstractTerrainFeature):
@@ -55,7 +56,7 @@ class OreFeature(AbstractTerrainFeature):
         self.batch_min = min_size
         self.batch_max = max_size
     
-    def generation_attempt(self, random: float, chunk, chunk_x: int, chunk_y: int, chunk_z, is_top_layer: bool):
+    def generation_attempt(self, chunk_region, random: float, chunk, chunk_x: int, chunk_y: int, chunk_z, is_top_layer: bool):
         if is_top_layer:
             pass
         elif random < self.chance and chunk_y < self.max_y and chunk_y > self.min_y:
@@ -64,7 +65,7 @@ class OreFeature(AbstractTerrainFeature):
                 delta_x: int = round(x/3 + 0.66)
                 delta_y: int = round(x/3 + 0.33)
                 delta_z: int = round(x/3)
-                _generate_block(chunk, [chunk_x + delta_x, chunk_y + delta_y, chunk_z + delta_z], self.ore_name)
+                _generate_block(chunk_region, chunk, [chunk_x + delta_x, chunk_y + delta_y, chunk_z + delta_z], self.ore_name)
         else:
             pass
 class AbstractTreeGenerator(AbstractTerrainFeature):
@@ -106,7 +107,7 @@ class AbstractTreeGenerator(AbstractTerrainFeature):
                     plot.append(obj)
         return plot
     
-    def generation_attempt(self, random: float, chunk, chunk_x: int, chunk_y: int, chunk_z, is_top_layer: bool):
+    def generation_attempt(self, chunk_region, random: float, chunk, chunk_x: int, chunk_y: int, chunk_z, is_top_layer: bool):
         if not is_top_layer:
             pass
         elif random < self.chance and chunk_y < self.max_y and chunk_y > self.min_y:
@@ -116,12 +117,12 @@ class AbstractTreeGenerator(AbstractTerrainFeature):
                     return False
             for delta_y in range(height):#trunk generation
                 # TODO trunk orientation
-                _generate_block(chunk, [chunk_x, chunk_y + delta_y, chunk_z], self.trunk_name)
+                _generate_block(chunk_region, chunk, [chunk_x, chunk_y + delta_y, chunk_z], self.trunk_name)
                 
             blocks = self._leaves()
             for b in blocks:
                 if _is_air(chunk, chunk_x + b[0], chunk_y + b[1] + height, chunk_z + b[2]):
                     continue
-                _generate_block(chunk, [chunk_x + b[0], chunk_y + b[1] + height, chunk_z + b[2]], self.leaf_name)
+                _generate_block(chunk_region, chunk, [chunk_x + b[0], chunk_y + b[1] + height, chunk_z + b[2]], self.leaf_name)
         else:
             pass
