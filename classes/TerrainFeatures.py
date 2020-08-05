@@ -26,6 +26,15 @@ class OreFeature(AbstractTerrainFeature):
         if is_top_layer:
             pass
         elif random < self.chance and chunk_y < self.max_y and chunk_y > self.min_y:
-            chunk.addNewBlock(chunk_x, chunk_y, chunk_z, BasicClasses.Block(chunk_x, chunk_y, chunk_z, self.ore_name, None))
+            blobsize: int = round(random()* (self.batch_max-self.batch_min))+self.batch_min
+            for x in range(blobsize):
+                delta_x: int = round(x/3 + 0.66)
+                delta_y: int = round(x/3 + 0.33)
+                delta_z: int = round(x/3)
+                block_x: int = delta_x + chunk_x + chunk.xPos
+                # Danger! Statement below may be victim of misunderstandings
+                block_y: int = delta_y + chunk_y + chunk.yPos
+                block_z: int = delta_z + chunk_z + chunk.zPos
+                chunk.addNewBlock(chunk_x + delta_x, chunk_y + delta_y, chunk_z + delta_z, BasicClasses.Block(block_x, block_y, block_z, self.ore_name, None))
         else:
             pass
