@@ -1,6 +1,26 @@
 from classes import BasicClasses
 from random import randint, choice
 
+def _generate_block_unsafely(chunk, chunkpos: [int, int, int], pos: [int, int, int], material: str) -> bool:
+    """Generated a block in a given chunk unsafely -> ignores any errors """
+    try:
+        chunk.addNewBlock(chunkpos[0], chunkpos[1], chunkpos[2], BasicClasses.Block(pos[0], pos[1], pos[2], material, None))
+        return True
+    except:
+        return False
+
+def _generate_block(chunk, chunkpos: [int, int, int], material: str):
+    """Generates a block safely (Errors may however still occour) by going to a nearby chunk
+     If the chunkpos are out of bounds. However, this function uses up more resources"""
+    if (chunkpos[0] < 0 or chunkpos[0] > 15 or
+       chunkpos[1] < 0 or chunkpos [1] > 15 or
+       chunkpos [2] < 0 or chunkpos[2] > 15):
+        pass
+        #walk to the correct chunk
+        #c = [chunk.xPos + chunkpos[0]/16, chunk.yPos + chunkpos[1]/16, chunk.zPos + chunkpos[2]/16]
+        #this is where we should load the correct chunk
+        # however right now that is Not Possible
+    _generate_block_unsafely(chunk, chunkpos, [chunk.xPos * 16 + chunkpos[0], chunk.yPos * 16 + chunkpos [1], chunk.zPos * 16 + chunkpos [2]], material)
 class AbstractTerrainFeature:
     
     def generation_attempt(self, random: float, chunk, chunk_x: int, chunk_y: int, chunk_z: int, is_top_layer: bool):
@@ -32,11 +52,7 @@ class OreFeature(AbstractTerrainFeature):
                 delta_x: int = round(x/3 + 0.66)
                 delta_y: int = round(x/3 + 0.33)
                 delta_z: int = round(x/3)
-                block_x: int = delta_x + chunk_x + chunk.xPos
-                # Danger! Statement below may be victim of misunderstandings
-                block_y: int = delta_y + chunk_y + chunk.yPos
-                block_z: int = delta_z + chunk_z + chunk.zPos
-                chunk.addNewBlock(chunk_x + delta_x, chunk_y + delta_y, chunk_z + delta_z, BasicClasses.Block(block_x, block_y, block_z, self.ore_name, None))
+                _generate_block(chunk, [chunk_x + delta_x, chunk_y + delta_y, chunk_z + delta_z], self.ore_name)
         else:
             pass
 class AbstractTreeGenerator(AbstractTerrainFeature):
@@ -82,22 +98,17 @@ class AbstractTreeGenerator(AbstractTerrainFeature):
         if not is_top_layer:
             pass
         elif random < self.chance and chunk_y < self.max_y and chunk_y > self.min_y:
-            height: int = round(random()* (self.max_y-self.min_y))+self.min_y
+            height: int = randint(self.min_y, self.max_y)
             block_x: int = chunk_x + chunk.xPos
             block_z: int = chunk_z + chunk.zPos
             for delta_y in range(height):#trunk generation
                 # Danger! Statement below may be victim of misunderstandings
                 block_y: int = delta_y + chunk_y + chunk.yPos
                 # TODO trunk orientation
-                chunk.addNewBlock(chunk_x, chunk_y + delta_y, chunk_z, BasicClasses.Block(block_x, block_y, block_z, self.trunk_name, None))
-            
+                _generate_block(chunk, [chunk_x, chunk_y + delta_y, chunk_z], self.trunk_name)
+                
             blocks = self._leaves()
             for b in blocks:
-                # Danger! Statement below may be victim of misunderstandings
-                block_y: int = b[1] + chunk_y + chunk.yPos
-                block_x = b[0] + chunk_x + chunk.xPos
-                block_z = b[2] + chunk_z + chunk.zPos
-                chunk.addNewBlock(chunk_x + b[0], chunk_y + b[1], chunk_z + b[2], BasicClasses.Block(block_x, block_y, block_z, self.leaf_name, None))
-            
+                _generate_block(chunk, [chunk_x + b[0], chunk_y + b[1] + height, chunk_z + b[2]], self.leaf_name)
         else:
             pass
