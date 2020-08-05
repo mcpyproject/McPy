@@ -2,20 +2,25 @@
 
 from classes import Exceptions
 from classes import BasicClasses
+from classes import TerrainFeature
 from math import floor, sqrt
 from random import randint, random
 
 # Ore height ranges: the lower range will have a higher chance of being selected
-COAL_ORE = ((1, 127), (5, 16), 3, "COAL_ORE")        # generate coal ore between y=1 and y=128 at vein size between 5 and 16 blocks, at a 3 in 100 chance
-IRON_ORE = ((1, 63), (6, 8), 3, "IRON_ORE")          # generate iron ore between y=1 and y=63 at vein size of 6-8 blocks, at a 3 in 100 chance
-LAPIS_LAZULI_ORE = ((1, 32), (1, 3), 1.25, "LAPIS_LAZULI_ORE")  # generate lapis lazuli ore between y=1 and y=32 at vein size of 1-3 blocks, at a 1.25 in 100 chance
-GOLD_ORE = ((1, 32), (6, 8), 2.5, "GOLD_ORE")
-REDSTONE_ORE = ((1, 24), (3, 8), 2, "REDSTONE_ORE")
-DIAMOND_ORE = ((1, 16), (4, 8), 0.3, "DIAMOND_ORE")
+# generate coal ore between y=1 and y=128 at vein size between 5 and 16 blocks, at a 3 in 100 chance
+COAL_ORE = TerrainFeature.OreFeature("COAL_ORE", 3, 0, 128, 5, 16)
+IRON_ORE = TerrainFeature.OreFeature("IRON_ORE", 3, 0, 64, 6, 8)
+LAPIZ_ORE = TerrainFeature.OreFeature("LAPIS_LAZULI_ORE", 3, 0, 32, 1, 3)
+GOLD_ORE = TerrainFeature.OreFeature("GOLD_ORE", 3, 0, 32, 6, 8)
+REDSTONE_ORE = TerrainFeature.OreFeature("REDSTONE_ORE", 3, 0, 24, 3, 8)
+DIAMOND_ORE = TerrainFeature.OreFeature("DIAMOND_ORE", 3, 0, 16, 4, 8)
 
-#Holds ores spawning naturally in all biomes
-NATURAL_ORES = [COAL_ORE, IRON_ORE, LAPIS_LAZULI_ORE, GOLD_ORE, REDSTONE_ORE, DIAMOND_ORE]
+#Trees
+OAK_TREE = TerrainFeature.AbstractTreeGenerator("OAK_LOG", "OAK_LEAVES", 5.0, 4, 8)
+BIRCH_TREE = TerrainFeature.AbstractTreeGenerator("BIRCH_LOG", "BIRCH_LEAVES", 5.0, 5, 8)
 
+#Holds stuff spawning naturally on world Generation - like trees or ores
+GENERATORS = [COAL_ORE, IRON_ORE, LAPIZ_ORE, GOLD_ORE, REDSTONE_ORE, DIAMOND_ORE, OAK_TREE, BIRCH_TREE]
 
 
 # Cave size settings
@@ -355,7 +360,8 @@ class WorldGenerator(SimplexNoise):
             for dirt in range(y - 1, y - 6):  # Generate dirt from the top layer of stone, to one block below the surface
                 await chunk.addNewBlock(x, dirt, z, BasicClasses.Block(x, dirt, z, "DIRT", {}))
             await chunk.addNewBlock(x, y, z, BasicClasses.Block(x, y, z, "GRASS_BLOCK", {}))  # Generate grass at the top layer
-            for height in range(1, y+1):  # Randomly add ores
-                for ore in NATURAL_ORES:
-                    if scaleNoise(noise, (1, 100)) < float(ore[2]):
-                        await chunk.addNewBlock(x, height, z, BasicClasses.Block(x, height, z, ore[3]))
+            for height in range(1, y-6):  # Randomly add ores
+                for gen in GENERATORS:
+                    await gen.generation_attempt(scaleNoise(noise, (1, 100)) , chunk, x, height, z, False)
+            for gen in GENERATORS:
+                await gen.generation_attempt(scaleNoise(noise, (1, 100)), chunk, x, y + 1, z, True)
