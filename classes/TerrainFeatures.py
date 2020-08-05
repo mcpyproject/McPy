@@ -25,7 +25,7 @@ def _generate_block(chunk, chunkpos: [int, int, int], material: str):
 def _is_air (chunk, x: int, y: int, z: int):
     """ Checks If a Block at a given position relative to the given chunk is air """
     try:
-        var: str = chunk.blocks["{},{},{}".format(x, y, z)]
+        var: str = chunk.blocks["{},{},{}".format(x, y, z)].id
         if var is None:
             return True
         return bool(var in ("AIR", "CAVE_AIR", "VOID_AIR"))
