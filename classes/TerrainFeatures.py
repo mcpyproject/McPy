@@ -130,3 +130,14 @@ class AbstractTreeGenerator(AbstractTerrainFeature):
                 _generate_block(chunk_region, chunk, pos, self._leaves_mat)
         else:
             pass
+
+class MatchstckTreeGenerator(AbstractTreeGenerator):
+    """Creates rather tall trees that have not many leaves,
+    the shape of the canope leads them to be called Matchstick trees"""
+    
+    def _leaves(self) -> [[int, int, int]]:
+        plot: [[int, int, int]] = [[0, 0, 0]] #top trunk block
+        height: int = -(randint(3, 5))
+        for y in range(height, -1):
+            plot.extend(([-1, y, 0], [0, y, -1], [0, y, 1], [1, y, 0]))
+        return plot
