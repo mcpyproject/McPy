@@ -61,4 +61,5 @@ class Chunk:
                                                                                                  self.height))
         self.blocks["{},{},{}".format(x, y, z)] = block
 
-
+    def getChunk(self):
+        return self
