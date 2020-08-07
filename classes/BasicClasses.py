@@ -1,21 +1,25 @@
+"""Basic utility classes for mcpy, contains thinks like blocks, chunks and regions"""
 # coding=utf-8
-
-from classes import Exceptions
 import asyncio
 
+import Exceptions
+from materials import Material
 
 class Block:
-    def __init__(self, x: int, y: int, z: int, _id: str, data: [dict, None]):
+    def __init__(self, x: int, y: int, z: int, _material: Material, data: [dict, None]):
         self.xPos = x
         self.yPos = y
         self.zPos = z
-        self.id = _id
+        self.id = _material
         self.blockData = data
-
+        
+    def get_material(self) -> Material:
+        """Returns a block's material enum"""
+        return self.id
 
 class BlockEntity(Block):
-    def __init__(self, x, y, z, _id, data: [dict, None], blockEntityData):
-        super().__init__(x, y, z, _id, data)
+    def __init__(self, x, y, z, _material, data: [dict, None], blockEntityData):
+        super().__init__(x, y, z, _material, data)
         self.blockEntityData = blockEntityData
 
 
@@ -32,7 +36,7 @@ class Chunk:
     def __getitem__(self, item):
         return self.blocks[item]
 
-    def __init__(self, x: int, y: int, z: int, blockList: [list[Block], None], subRegion: Region, size=16, height=16):
+    def __init__(self, x: int, y: int, z: int, blockList: [[Block], None], subRegion: Region, size=16, height=16):
         self.xPos = x
         self.yPos = y
         self.zPos = z
@@ -45,9 +49,9 @@ class Chunk:
                 for b in range(self.height):
                     for c in range(self.size):
                         if b == 0:
-                            asyncio.get_event_loop().run_until_complete(self.addNewBlock(a, b, c, Block(a, b, c, "BEDROCK", {})))  # Flat bedrock at y=0
+                            asyncio.get_event_loop().run_until_complete(self.addNewBlock(a, b, c, Block(a, b, c, Material.BEDROCK, {})))  # Flat bedrock at y=0
                         else:
-                            asyncio.get_event_loop().run_until_complete(self.addNewBlock(a, b, c, Block(a, b, c, "AIR", {})))
+                            asyncio.get_event_loop().run_until_complete(self.addNewBlock(a, b, c, Block(a, b, c, Material.AIR, {})))
 
     async def addNewBlock(self, x: int, y: int, z: int, block: Block) -> None:
         if x - 1 > self.size or z - 1 > self.size:

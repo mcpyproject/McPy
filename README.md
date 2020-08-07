@@ -12,4 +12,4 @@ McPy is currently under heavy development: very few things are actually working.
 Check out the issues and see if you can help solve one. If you've solved it, open a PR and it'll be merged into master.
 
 ## Where can I get more info and help?
-Our support server: 
+Our support server: https://discord.gg/5bRV8ut
