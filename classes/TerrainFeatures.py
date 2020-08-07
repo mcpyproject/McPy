@@ -5,6 +5,7 @@ from random import randint, choice
 import BasicClasses
 from materials import Material
 
+
 def _generate_block_unsafely(chunk, chunkpos: [int, int, int], pos: [int, int, int], material: Material) -> bool:
     """Generated a block in a given chunk unsafely -> ignores any errors """
     try:
@@ -12,6 +13,7 @@ def _generate_block_unsafely(chunk, chunkpos: [int, int, int], pos: [int, int, i
         return True
     except:
         return False
+
 
 def _generate_block(region: BasicClasses.Region, chunk: BasicClasses.Region, chunkpos: [int, int, int], material: Material):
     """Generates a block safely (Errors may however still occour) by going to a nearby chunk
@@ -27,6 +29,7 @@ def _generate_block(region: BasicClasses.Region, chunk: BasicClasses.Region, chu
         # however right now that is Not Possible
     _generate_block_unsafely(chunk, chunkpos, [chunk.xPos * 16 + chunkpos[0], chunk.yPos * 16 + chunkpos [1], chunk.zPos * 16 + chunkpos [2]], material)
 
+
 def _is_air (chunk: BasicClasses.Chunk, x: int, y: int, z: int):
     """ Checks If a Block at a given position relative to the given chunk is air """
     try:
@@ -34,10 +37,11 @@ def _is_air (chunk: BasicClasses.Chunk, x: int, y: int, z: int):
     except:
         return True
 
+
 class AbstractTerrainFeature:
-    
     def generation_attempt(self, chunk_region: BasicClasses.Region, random: float, chunk, chunk_x: int, chunk_y: int, chunk_z: int, is_top_layer: bool):
         pass
+
 
 class OreFeature(AbstractTerrainFeature):
     
@@ -59,7 +63,7 @@ class OreFeature(AbstractTerrainFeature):
     def generation_attempt(self, chunk_region: BasicClasses.Region, random: float, chunk: BasicClasses.Chunk, chunk_x: int, chunk_y: int, chunk_z, is_top_layer: bool):
         if is_top_layer:
             pass
-        elif random < self.chance and chunk_y < self.max_y and chunk_y > self.min_y:
+        elif random < self.chance and self.max_y > chunk_y > self.min_y:
             blobsize: int = randint(self.batch_min, self.batch_max)
             for x in range(blobsize):
                 delta_x: int = round(x/3 + 0.66)
@@ -68,6 +72,7 @@ class OreFeature(AbstractTerrainFeature):
                 _generate_block(chunk_region, chunk, [chunk_x + delta_x, chunk_y + delta_y, chunk_z + delta_z], self._ore)
         else:
             pass
+
 
 class AbstractTreeGenerator(AbstractTerrainFeature):
     """Marks a tree Generator, by default it generates a birch-looking tree"""
@@ -113,7 +118,7 @@ class AbstractTreeGenerator(AbstractTerrainFeature):
     def generation_attempt(self, chunk_region: BasicClasses.Region, random: float, chunk: BasicClasses.Chunk, chunk_x: int, chunk_y: int, chunk_z, is_top_layer: bool):
         if not is_top_layer:
             pass
-        elif random < self.chance and chunk_y < self.max_y and chunk_y > self.min_y:
+        elif random < self.chance and self.max_y > chunk_y > self.min_y:
             height: int = randint(self.min_y, self.max_y)
             for delta_y in range(height):#check If it can generate the trunk
                 if _is_air(chunk, chunk_x, chunk_y + delta_y, chunk_z):
@@ -130,6 +135,7 @@ class AbstractTreeGenerator(AbstractTerrainFeature):
                 _generate_block(chunk_region, chunk, pos, self._leaves_mat)
         else:
             pass
+
 
 class MatchstckTreeGenerator(AbstractTreeGenerator):
     """Creates rather tall trees that have not many leaves,

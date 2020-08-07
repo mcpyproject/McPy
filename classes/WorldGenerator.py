@@ -3,11 +3,11 @@
 from random import randint
 from math import floor, sqrt
 
-import BasicClasses
-import TerrainFeature
-from materials import Material
+import classes.BasicClasses
+import classes.TerrainFeature
+from classes.materials import Material
 
-#Ore height ranges: the lower range will have a higher chance of being selected
+# Ore height ranges: the lower range will have a higher chance of being selected
 # generate coal ore between y=1 and y=128 at vein size between 5 and 16 blocks, at a 3 in 100 chance
 COAL_ORE = TerrainFeature.OreFeature(Material.COAL_ORE, 3, 0, 128, 5, 16)
 IRON_ORE = TerrainFeature.OreFeature(Material.IRON_ORE, 3, 0, 64, 6, 8)
@@ -16,18 +16,19 @@ GOLD_ORE = TerrainFeature.OreFeature(Material.GOLD_ORE, 3, 0, 32, 6, 8)
 REDSTONE_ORE = TerrainFeature.OreFeature(Material.REDSTONE_ORE, 3, 0, 24, 3, 8)
 DIAMOND_ORE = TerrainFeature.OreFeature(Material.DIAMOND_ORE, 3, 0, 16, 4, 8)
 
-#Trees
+# Trees
 BIRCH_TREE = TerrainFeature.AbstractTreeGenerator(Material.BIRCH_LOG, Material.BIRCH_LEAVES, 0.5, 5, 8)
 MATCHSTICK_TREE = TerrainFeature.MatchstckTreeGenerator(Material.SPRUCE_LOG, Material.SPRUCE_LEAVES, 0.3, 8, 12)
 OAK_TREE = TerrainFeature.AbstractTreeGenerator(Material.OAK_LOG, Material.OAK_LEAVES, 1.5, 4, 8)
 
-#Holds stuff spawning naturally on world Generation - like trees or ores
+# Holds stuff spawning naturally on world Generation - like trees or ores
 GENERATORS: [TerrainFeature.AbstractTerrainFeature] = [COAL_ORE, IRON_ORE, LAPIZ_ORE,
            GOLD_ORE, REDSTONE_ORE, DIAMOND_ORE, OAK_TREE, BIRCH_TREE, MATCHSTICK_TREE]
 
 
 # Cave size settings
-WEIRDNESS = 0  # How random should the caves be? Lower values = short but very twisty: high values = long but very straight: constrained to between -1 and 1
+WEIRDNESS = 0  # How random should the caves be? Lower values = short but very twisty: high values = long but very
+# straight: constrained to between -1 and 1
 
 # 3D Gradient vectors
 _GRAD3 = ((1, 1, 0), (-1, 1, 0), (1, -1, 0), (-1, -1, 0),
