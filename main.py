@@ -19,8 +19,8 @@ else:
 assert (sys.version_info.minor >= 8 and sys.version_info.major >= 3)
 "McPy needs Python version 3.8.0 or higher to run!"
 
-logging.basicConfig(format="[%(asctime)s - %(level)s] %(message)s")
-logging.disable(logging.NOTSET)
+logging.basicConfig(format="[%(asctime)s - %(level)s] %(message)s", level=logging.DEBUG)
+logging.disable(logging.DEBUG)
 
 logging.info("Starting queues...")
 TASK_LIST = {}
