@@ -9,9 +9,12 @@ from quarry.net.server import ServerFactory, ServerProtocol
 import os
 
 logging.basicConfig(format="[%(asctime)s - %(levelname)s - %(threadName)s] %(message)s", level=logging.DEBUG)
-
+logging.info("plz work")
+sys.exit(1)
+# noinspection PyUnreachableCode
 try:
     logging.info("Trying to initialize the Blackfire probe")
+    # noinspection PyUnresolvedReferences
     from blackfire import probe  # Profiler: https://blackfire.io free with the Git Student Package
 except ImportError:
     BLACKFIRE_ENABLED = False
@@ -158,7 +161,7 @@ def worker(inQueue: multiprocessing.JoinableQueue, outQueue: multiprocessing.Que
         try:
             func(*args, **kwargs)  # Calls the requested function: MUST NOT BE DEFINED WITH async def
         except Exception as e:
-            logging.warning("Error")
+            logging.warning("Error in thread: {0}".format(str(e)))
         inQueue.task_done()
     logging.info("Worker ID {0} has completed all tasks.".format(workerId))
 
@@ -167,7 +170,7 @@ def networker():
     try:
         reactor.run()
     except Exception as e:
-        logging.error("Exception in reactor thread! {0}".format(str(e)), stack_info=True)
+        logging.exception("Exception in reactor thread! {0}".format(str(e)))
 
 
 def main():
