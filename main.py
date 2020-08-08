@@ -5,13 +5,11 @@ import multiprocessing
 import logging
 from queue import Empty, Full  # multiprocessing.Queue() full and empty exceptions
 from twisted.internet import reactor
-from quarry.net.server import ServerFactory, ServerProtocol
+from quarry.net import server
 import os
 
 logging.basicConfig(format="[%(asctime)s - %(levelname)s - %(threadName)s] %(message)s", level=logging.DEBUG)
-logging.info("plz work")
-sys.exit(1)
-# noinspection PyUnreachableCode
+
 try:
     logging.info("Trying to initialize the Blackfire probe")
     # noinspection PyUnresolvedReferences
@@ -22,11 +20,12 @@ except ImportError:
 else:
     BLACKFIRE_ENABLED = True
     probe.initialize()
-    probe.enable()
+    # probe.enable()
     logging.info("Enabled!")
 
-assert (sys.version_info.minor >= 8 and sys.version_info.major >= 3)
-"McPy needs Python version 3.8.0 or higher to run!"
+if not sys.version_info.minor >= 8 and sys.version_info.major >= 3:
+    logging.fatal("McPy needs Python version 3.8.0 or higher to run!")
+    sys.exit(-2)
 
 logging.info("Starting queues...")
 TASK_LIST = {}
@@ -72,11 +71,11 @@ def get_all_completed_tasks(queueInUse):
 
 
 # The next two classes are from https://quarry.readthedocs.io
-class ChatRoomProtocol(ServerProtocol):
+class ChatRoomProtocol(server.ServerProtocol):
     def player_joined(self):
         # Call super. This switches us to "play" mode, marks the player as
         #   in-game, and does some logging.
-        ServerProtocol.player_joined(self)
+        server.ServerProtocol.player_joined(self)
 
         # Send "Join Game" packet
         self.send_packet("join_game",
@@ -110,7 +109,7 @@ class ChatRoomProtocol(ServerProtocol):
         self.factory.send_chat(u"\u00a7e%s has joined." % self.display_name)
 
     def player_left(self):
-        ServerProtocol.player_left(self)
+        server.ServerProtocol.player_left(self)
 
         # Announce player left
         self.factory.send_chat(u"\u00a7e%s has left." % self.display_name)
@@ -135,7 +134,7 @@ class ChatRoomProtocol(ServerProtocol):
         self.factory.send_chat("<%s> %s" % (self.display_name, p_text))
 
 
-class ChatRoomFactory(ServerFactory):
+class ChatRoomFactory(server.ServerFactory):
     protocol = ChatRoomProtocol
     motd = "Chat Room Server"  # Later customizable
 
@@ -145,10 +144,13 @@ class ChatRoomFactory(ServerFactory):
 
 
 def worker(inQueue: multiprocessing.JoinableQueue, outQueue: multiprocessing.Queue, workerId: str):
-    logging.basicConfig(format="[%(asctime)s - %(level)s] %(message)s")
     logging.info("Worker ID {0} has started up.".format(workerId))
     while True:
-        item = inQueue.get()  # Waits for a new item to appear on the queue
+        try:
+            item = inQueue.get()  # Waits for a new item to appear on the queue
+        except KeyboardInterrupt:
+            outQueue.put(None)
+            break
         if item is None:  # Sending None down the pipe stops the first worker that grabs it: send it as many times as
             # there are workers and they'll all stop: this is how McPy shuts all of them down safely
             inQueue.task_done()
@@ -166,15 +168,17 @@ def worker(inQueue: multiprocessing.JoinableQueue, outQueue: multiprocessing.Que
     logging.info("Worker ID {0} has completed all tasks.".format(workerId))
 
 
-def networker():
+def networker(factory, _reactor):
+    listener = ("0.0.0.0", 25565)
     try:
-        reactor.run()
+        factory.listen(*listener)
+        logging.info("Startup done! Listening on {0[0]}:{0[1]}".format(listener))
+        _reactor.run()
     except Exception as e:
-        logging.exception("Exception in reactor thread! {0}".format(str(e)))
+        logging.exception("Exception in networking thread! {0}".format(str(e)))
 
 
 def main():
-    logging.basicConfig(format="[%(asctime)s - %(level)s] %(message)s")
     logging.info("Trying to find number of available cores")
     avaliCPUs = len(os.sched_getaffinity(0))
     if avaliCPUs > 2:
@@ -191,18 +195,18 @@ def main():
         logging.info("Started worker.")
         workers.append(p)
         del _
-    '''
-    networkingFunc = networker
+    factory = ChatRoomFactory()
+    factory.motd = "Chat Room"
     logging.info("Starting networking worker")
-    networkingProcess = multiprocessing.Process(target=networkingFunc)
+    networkingProcess = multiprocessing.Process(target=networker, args=(factory, reactor))
     networkingProcess.run()
     logging.info("Started worker.")
-    '''
     try:
-        reactor.run()
+        while True:  # Twiddling your thumbs, eh?
+            pass
     except KeyboardInterrupt:
         logging.info("Shutting server down!")
-        #networkingProcess.kill()  # There's no good way to stop this other than kill: but it doesn't use any Queues, so
+        networkingProcess.kill()  # There's no good way to stop this other than kill: but it doesn't use any Queues, so
         # this is safe: for now
         for _ in workers:
             TASK_QUEUE.put(None)
