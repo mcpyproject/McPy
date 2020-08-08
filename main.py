@@ -8,7 +8,7 @@ from twisted.internet import reactor
 from quarry.net.server import ServerFactory, ServerProtocol
 import os
 
-logging.basicConfig(format="[%(asctime)s - %(level)s] %(message)s", level=logging.DEBUG)
+logging.basicConfig(format="[%(asctime)s - %(levelname)s - %(threadName)s] %(message)s", level=logging.DEBUG)
 
 try:
     logging.info("Trying to initialize the Blackfire probe")
