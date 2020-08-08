@@ -7,20 +7,23 @@ from queue import Empty, Full  # multiprocessing.Queue() full and empty exceptio
 from twisted.internet import reactor
 from quarry.net.server import ServerFactory, ServerProtocol
 import os
+
+logging.basicConfig(format="[%(asctime)s - %(level)s] %(message)s", level=logging.DEBUG)
+
 try:
+    logging.info("Trying to initialize the Blackfire probe")
     from blackfire import probe  # Profiler: https://blackfire.io free with the Git Student Package
 except ImportError:
     BLACKFIRE_ENABLED = False
+    logging.info("Blackfire not installed: passing")
 else:
     BLACKFIRE_ENABLED = True
     probe.initialize()
     probe.enable()
+    logging.info("Enabled!")
 
 assert (sys.version_info.minor >= 8 and sys.version_info.major >= 3)
 "McPy needs Python version 3.8.0 or higher to run!"
-
-logging.basicConfig(format="[%(asctime)s - %(level)s] %(message)s", level=logging.DEBUG)
-logging.disable(logging.DEBUG)
 
 logging.info("Starting queues...")
 TASK_LIST = {}
@@ -32,7 +35,7 @@ except ImportError:
                   "https://bugs.python.org/issue3770 for more info.")  # click the bug link
     sys.exit(-1)
 DONE_QUEUE = multiprocessing.Queue(1000)  # Allow the done queue to have up to 1,000 items in it at any given time
-LOGGING_INFO = {"threadName": "Main", "threadId": "0"}
+LOGGING_INFO = {"threadName": "Main", "threadId": "0"}  # Currently unused
 logging.info("Started queues!")
 
 
@@ -58,13 +61,14 @@ def return_task(taskData, dataIn: multiprocessing.JoinableQueue, dataOut: multip
 
 
 def get_all_completed_tasks(queueInUse):
-    while not queueInUse.empty():
+    while not queueInUse.empty():  # Not too reliable, so also double check and handle the Empty exception
         try:
             yield queueInUse.get(False)
         except Empty:
             break
 
 
+# The next two classes are from https://quarry.readthedocs.io
 class ChatRoomProtocol(ServerProtocol):
     def player_joined(self):
         # Call super. This switches us to "play" mode, marks the player as
@@ -130,7 +134,7 @@ class ChatRoomProtocol(ServerProtocol):
 
 class ChatRoomFactory(ServerFactory):
     protocol = ChatRoomProtocol
-    motd = "Chat Room Server"
+    motd = "Chat Room Server"  # Later customizable
 
     def send_chat(self, message):
         for player in self.players:
