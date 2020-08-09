@@ -133,7 +133,7 @@ if "main.py" not in currentDir:
     else:
         logging.info("Successfully downloaded McPy!")
     logging.info("Unzipping files...")
-    with open("mcPyTempFile.zip", "w") as zf:
+    with open("mcPyTempFile.zip", "wb") as zf:
         for j in downloadedServer.iter_content(100000):  # 100,000 bytes each time to be safe
             zf.write(j)
     logging.info("Checking checksums...")
