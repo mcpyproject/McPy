@@ -109,7 +109,7 @@ version = parsedArgs.useversion
 pythonlocation = parsedArgs.pythonlocation
 
 currentDir = os.listdir(".")
-if "main.py" not in currentDir:
+if "McPy" not in currentDir:
     logging.warning("main.py not found! Downloading McPy again...")
     if version == "latest":
         logging.info("Downloading latest version...")
@@ -148,7 +148,7 @@ if "main.py" not in currentDir:
 else:
     logging.info("McPy found! Running it...")
     if PYTHONINPATH:
-        mcpyProcess = subprocess.Popen("python3.8 main.py")
+        mcpyProcess = subprocess.Popen("python3.8 McPy/main.py")
     else:
-        mcpyProcess = subprocess.Popen("{0} main.py".format(pythonlocation))
+        mcpyProcess = subprocess.Popen("{0} McPy/main.py".format(pythonlocation))
     mcpyProcess.wait()
