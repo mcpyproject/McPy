@@ -222,7 +222,7 @@ def main():
     logging.info("Started worker.")
     try:
         while True:  # Twiddling your thumbs, eh?
-            pass
+            sleep(60)
     except KeyboardInterrupt:
         logging.info("Shutting server down!")
         networkingProcess.kill()  # There's no good way to stop this other than kill: but it doesn't use any Queues, so
