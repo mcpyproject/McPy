@@ -4,6 +4,7 @@ import multiprocessing
 import os
 import random
 import sys
+import gc
 
 from queue import Empty, Full  # multiprocessing.Queue() full and empty exceptions
 from quarry.net import server
@@ -40,13 +41,12 @@ except ImportError:
                   "https://bugs.python.org/issue3770 for more info.")  # click the bug link
     sys.exit(-1)
 DONE_QUEUE = multiprocessing.Queue(1000)  # Allow the done queue to have up to 1,000 items in it at any given time
+REQUEST_QUEUE = multiprocessing.Queue(1000)  # Queue for items that have a pending request to be executed
 LOGGING_INFO = {"threadName": "Main", "threadId": "0"}  # Currently unused
 logging.info("Started queues!")
 
 
-def send_task(func, args: list, kwargs: dict, dataOut: multiprocessing.Queue, d: dict = LOGGING_INFO) -> [int,
-                                                                                                                  None]:
-    logging.basicConfig(format="[%(asctime)s - %(level)s] %(message)s")
+def send_task(func, args: list, kwargs: dict, dataOut: multiprocessing.Queue) -> [int, None]:
     taskId = round(random.random() * 10000000)  # Generate a random ID for the task
     taskData = dict(function=func, args=args, kwargs=kwargs)
     try:
@@ -70,6 +70,8 @@ def get_all_completed_tasks(queueInUse):
 
 # The next two classes are from https://quarry.readthedocs.io
 class ChatRoomProtocol(server.ServerProtocol):
+    request_item_queue = REQUEST_QUEUE
+
     def player_joined(self):
         # Call super. This switches us to "play" mode, marks the player as
         #   in-game, and does some logging.
@@ -129,7 +131,8 @@ class ChatRoomProtocol(server.ServerProtocol):
         # When we receive a chat message from the player, ask the factory
         # to relay it to all connected players
         p_text = buff.unpack_string()
-        self.factory.send_chat("<%s> %s" % (self.display_name, p_text))
+        send_task(self.factory.send_chat, ["<{0}> {1}".format(self.display_name, p_text)], {}, REQUEST_QUEUE)
+        # Wants a item to be processed
 
 
 class ChatRoomFactory(server.ServerFactory):
@@ -153,14 +156,24 @@ def worker(inQueue: multiprocessing.Queue, outQueue: multiprocessing.Queue, work
             # there are workers and they'll all stop: this is how McPy shuts all of them down safely
             outQueue.put(None)
             break
+        elif isinstance(item, str):
+            if item.startswith("gc"):
+                try:
+                    if int(item[2]) in (0, 1, 2):
+                        gc.collect(int(item[2]))
+                except TypeError:
+                    pass
+            continue
         func = item["func"]
         args = item["args"]
         kwargs = item["kwargs"]
         # noinspection PyBroadException
         try:
-            func(*args, **kwargs)  # Calls the requested function: MUST NOT BE DEFINED WITH async def
+            result = func(*args, **kwargs)  # Calls the requested function: MUST NOT BE DEFINED WITH async def
         except Exception as e:
             logging.warning("Error in thread: {0}".format(str(e)))
+            result = "error"  # idk the best way to define a error result
+        outQueue.put({"request": item, "result": result})
     logging.info("Worker ID {0} has completed all tasks.".format(workerId))
 
 
@@ -180,7 +193,9 @@ def main():
         avaliCPUs = len(os.sched_getaffinity(0))
     except AttributeError:
         # Fix for windows, which doesnt support getaffinity
-        logging.warning("Falling back to multiprocessing cpu_count to calc cores. Most likely getaffinity is not supported on your OS")
+        logging.warning(
+            "Falling back to multiprocessing cpu_count to calc cores. Most likely getaffinity is not supported on "
+            "your OS")
         avaliCPUs = multiprocessing.cpu_count()
 
     if avaliCPUs > 2:
