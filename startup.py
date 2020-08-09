@@ -97,7 +97,7 @@ if "python3.8" not in systemPath:
 else:
     PYTHONINPATH = True
 
-if parsedArgs.version:
+if parsedArgs.versions:
     for item in releases:
         print("Release version {0} released on {1} for Minecraft version {2}".format(item["mcpyVersion"],
                                                                                      item["releaseDate"],
