@@ -37,5 +37,4 @@ class Material (Enum):
     
     # ----------- UTILITY METHODS BELOW ----------
     def is_air(self):
-        return  bool(self is Material.AIR or self is Material.CAVE_AIR or self is Material.VOID_AIR)
-    
+        return bool(self is Material.AIR or self is Material.CAVE_AIR or self is Material.VOID_AIR)

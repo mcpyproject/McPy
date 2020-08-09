@@ -1,12 +1,13 @@
 # coding=utf-8
-import sys
-import random
-import multiprocessing
 import logging
-from queue import Empty, Full  # multiprocessing.Queue() full and empty exceptions
-from twisted.internet import reactor
-from quarry.net import server
+import multiprocessing
 import os
+import random
+import sys
+
+from queue import Empty, Full  # multiprocessing.Queue() full and empty exceptions
+from quarry.net import server
+from twisted.internet import reactor
 
 logging.basicConfig(format="[%(asctime)s - %(levelname)s - %(threadName)s] %(message)s", level=logging.DEBUG)
 

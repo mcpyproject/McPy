@@ -1,28 +1,27 @@
 # coding=utf-8
 
-from random import randint
-from math import floor, sqrt
-
-import classes.BasicClasses
-import classes.TerrainFeature
+from classes import BasicClasses
+from classes import TerrainFeatures
 from classes.materials import Material
+from math import floor, sqrt
+from random import randint
 
 # Ore height ranges: the lower range will have a higher chance of being selected
 # generate coal ore between y=1 and y=128 at vein size between 5 and 16 blocks, at a 3 in 100 chance
-COAL_ORE = TerrainFeature.OreFeature(Material.COAL_ORE, 3, 0, 128, 5, 16)
-IRON_ORE = TerrainFeature.OreFeature(Material.IRON_ORE, 3, 0, 64, 6, 8)
-LAPIZ_ORE = TerrainFeature.OreFeature(Material.LAPIS_ORE, 3, 0, 32, 1, 3)
-GOLD_ORE = TerrainFeature.OreFeature(Material.GOLD_ORE, 3, 0, 32, 6, 8)
-REDSTONE_ORE = TerrainFeature.OreFeature(Material.REDSTONE_ORE, 3, 0, 24, 3, 8)
-DIAMOND_ORE = TerrainFeature.OreFeature(Material.DIAMOND_ORE, 3, 0, 16, 4, 8)
+COAL_ORE = TerrainFeatures.OreFeature(Material.COAL_ORE, 3, 0, 128, 5, 16)
+IRON_ORE = TerrainFeatures.OreFeature(Material.IRON_ORE, 3, 0, 64, 6, 8)
+LAPIZ_ORE = TerrainFeatures.OreFeature(Material.LAPIS_ORE, 3, 0, 32, 1, 3)
+GOLD_ORE = TerrainFeatures.OreFeature(Material.GOLD_ORE, 3, 0, 32, 6, 8)
+REDSTONE_ORE = TerrainFeatures.OreFeature(Material.REDSTONE_ORE, 3, 0, 24, 3, 8)
+DIAMOND_ORE = TerrainFeatures.OreFeature(Material.DIAMOND_ORE, 3, 0, 16, 4, 8)
 
 # Trees
-BIRCH_TREE = TerrainFeature.AbstractTreeGenerator(Material.BIRCH_LOG, Material.BIRCH_LEAVES, 0.5, 5, 8)
-MATCHSTICK_TREE = TerrainFeature.MatchstckTreeGenerator(Material.SPRUCE_LOG, Material.SPRUCE_LEAVES, 0.3, 8, 12)
-OAK_TREE = TerrainFeature.AbstractTreeGenerator(Material.OAK_LOG, Material.OAK_LEAVES, 1.5, 4, 8)
+BIRCH_TREE = TerrainFeatures.AbstractTreeGenerator(Material.BIRCH_LOG, Material.BIRCH_LEAVES, 0.5, 5, 8)
+MATCHSTICK_TREE = TerrainFeatures.MatchstckTreeGenerator(Material.SPRUCE_LOG, Material.SPRUCE_LEAVES, 0.3, 8, 12)
+OAK_TREE = TerrainFeatures.AbstractTreeGenerator(Material.OAK_LOG, Material.OAK_LEAVES, 1.5, 4, 8)
 
 # Holds stuff spawning naturally on world Generation - like trees or ores
-GENERATORS: [TerrainFeature.AbstractTerrainFeature] = [COAL_ORE, IRON_ORE, LAPIZ_ORE,
+GENERATORS: [TerrainFeatures.AbstractTerrainFeatures] = [COAL_ORE, IRON_ORE, LAPIZ_ORE,
            GOLD_ORE, REDSTONE_ORE, DIAMOND_ORE, OAK_TREE, BIRCH_TREE, MATCHSTICK_TREE]
 
 

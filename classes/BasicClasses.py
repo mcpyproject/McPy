@@ -2,8 +2,9 @@
 # coding=utf-8
 import asyncio
 
-import Exceptions
-from materials import Material
+from classes import Exceptions
+from classes.materials import Material
+
 
 class Block:
     def __init__(self, x: int, y: int, z: int, _material: Material, data: [dict, None]):
@@ -16,6 +17,7 @@ class Block:
     def get_material(self) -> Material:
         """Returns a block's material enum"""
         return self.id
+
 
 class BlockEntity(Block):
     def __init__(self, x, y, z, _material, data: [dict, None], blockEntityData):
