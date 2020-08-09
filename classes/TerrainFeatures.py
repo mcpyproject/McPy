@@ -2,8 +2,8 @@
 
 from random import randint, choice
 
-import BasicClasses
-from materials import Material
+from classes import BasicClasses
+from classes.materials import Material
 
 
 def _generate_block_unsafely(chunk, chunkpos: [int, int, int], pos: [int, int, int], material: Material) -> bool:
@@ -22,12 +22,12 @@ def _generate_block(region: BasicClasses.Region, chunk: BasicClasses.Region, chu
        chunkpos[1] < 0 or chunkpos [1] > 15 or
        chunkpos [2] < 0 or chunkpos[2] > 15):
         pass
-        #FIXME region.getChunk() is borked
-        #walk to the correct chunk
-        #c = [chunk.xPos + chunkpos[0]/16, chunk.yPos + chunkpos[1]/16, chunk.zPos + chunkpos[2]/16]
-        #this is where we should load the correct chunk
+        # FIXME region.getChunk() is borked
+        # walk to the correct chunk
+        # c = [chunk.xPos + chunkpos[0]/16, chunk.yPos + chunkpos[1]/16, chunk.zPos + chunkpos[2]/16]
+        # this is where we should load the correct chunk
         # however right now that is Not Possible
-    _generate_block_unsafely(chunk, chunkpos, [chunk.xPos * 16 + chunkpos[0], chunk.yPos * 16 + chunkpos [1], chunk.zPos * 16 + chunkpos [2]], material)
+    _generate_block_unsafely(chunk, chunkpos, [chunk.xPos * 16 + chunkpos[0], chunk.yPos * 16 + chunkpos[1], chunk.zPos * 16 + chunkpos [2]], material)
 
 
 def _is_air (chunk: BasicClasses.Chunk, x: int, y: int, z: int):
@@ -93,22 +93,22 @@ class AbstractTreeGenerator(AbstractTerrainFeature):
     def _leaves (self) -> [[int, int, int]]:
         """ The Generator for the leaves; only marks their positions.
         The Generator here is made to copy the generation of birch trees."""
-        plot = [[0, 0, 0]]#top trunk block
-        for y in (0,-1):# top layers
+        plot = [[0, 0, 0]]  # top trunk block
+        for y in (0,-1):  # top layers
             plot.extend(([-1, y, 0], [0, y, -1], [0, y, 1], [1, y, 0]))
-        #optional leaves at layer 2
+        # optional leaves at layer 2
         for obj in ([-1, -1, -1], [-1, -1, 1], [1, -1, -1], [1, -1, 1]):
             if choice((True, False)):
                 plot.append(obj)
         for y in (-2, -3):
             for x in range(-2, 2):
                 for z in range(-2, 2):
-                    #filter out optional leaves and trunk
+                    # filter out optional leaves and trunk
                     if (x == 0 and z == 0) or (abs(x) == 2 and abs(z) == 2):
                         continue
                     else:
                         plot.append([x, y, z])
-        #optional leaves at layer 3 and 4
+        # optional leaves at layer 3 and 4
         for y in (-2, -3):
             for obj in ([-2, y, -2], [-2, y, 2], [2, y, -2], [2, y, 2]):
                 if choice((True, False)):
@@ -120,10 +120,10 @@ class AbstractTreeGenerator(AbstractTerrainFeature):
             pass
         elif random < self.chance and self.max_y > chunk_y > self.min_y:
             height: int = randint(self.min_y, self.max_y)
-            for delta_y in range(height):#check If it can generate the trunk
+            for delta_y in range(height):  # check If it can generate the trunk
                 if _is_air(chunk, chunk_x, chunk_y + delta_y, chunk_z):
                     return
-            for delta_y in range(height):#trunk generation
+            for delta_y in range(height):  # trunk generation
                 # TODO trunk orientation
                 _generate_block(chunk_region, chunk, [chunk_x, chunk_y + delta_y, chunk_z], self._trunk)
                 
@@ -142,7 +142,7 @@ class MatchstckTreeGenerator(AbstractTreeGenerator):
     the shape of the canope leads them to be called Matchstick trees"""
     
     def _leaves(self) -> [[int, int, int]]:
-        plot: [[int, int, int]] = [[0, 0, 0]] #top trunk block
+        plot: [[int, int, int]] = [[0, 0, 0]]  # top trunk block
         height: int = -(randint(3, 5))
         for y in range(height, -1):
             plot.extend(([-1, y, 0], [0, y, -1], [0, y, 1], [1, y, 0]))
