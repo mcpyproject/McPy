@@ -148,7 +148,7 @@ if "McPy" not in currentDir:
 else:
     logging.info("McPy found! Running it...")
     if PYTHONINPATH:
-        mcpyProcess = subprocess.Popen("python3.8 McPy/main.py")
+        mcpyProcess = subprocess.Popen("{0} McPy/main.py".format(sys.executable))
     else:
         mcpyProcess = subprocess.Popen("{0} McPy/main.py".format(pythonlocation))
     mcpyProcess.wait()
