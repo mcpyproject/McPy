@@ -1,4 +1,11 @@
 # coding=utf-8
+# Version release dict key requirements
+# "mcpyVersion" = McPy version number
+# "minecraftVersion" = Minecraft version number
+# "releaseDate" = this version's release date
+# "downloadLink" = URL to the download of this server archive
+# "md5sum" = MD5 sum of the download
+# "sha1sum" = SHA1 sum of the download
 import os
 import sys
 import logging
@@ -8,6 +15,7 @@ import subprocess
 import zipfile
 import hashlib
 import argparse
+import pkg_resources
 
 
 parser = argparse.ArgumentParser()
@@ -23,6 +31,15 @@ parser.add_argument("--pythonlocation",  # Command line flag to define a Python 
                     default=None,        # If not passed, defaults to None
                     help="location of the Python 3.8 interpeter: defaults to the one found in the path")
 parsedArgs = parser.parse_args()
+
+
+# Automagically installs all packages required
+required = {"quarry", "twisted", "cryptography"}
+installed = {pkg.key for pkg in pkg_resources.working_set}
+missing = required - installed
+if missing:
+    # implement pip as a subprocess:
+    subprocess.check_call([sys.executable, '-m', 'pip', 'install', *missing])
 
 
 def getReleases() -> list:
