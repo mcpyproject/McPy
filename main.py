@@ -8,6 +8,7 @@ import sys
 from queue import Empty, Full  # multiprocessing.Queue() full and empty exceptions
 from quarry.net import server
 from twisted.internet import reactor
+from time import sleep
 
 logging.basicConfig(format="[%(asctime)s - %(levelname)s - %(threadName)s] %(message)s", level=logging.DEBUG)
 
@@ -31,7 +32,7 @@ if not sys.version_info.minor >= 8 and sys.version_info.major >= 3:
 logging.info("Starting queues...")
 TASK_LIST = {}
 try:
-    TASK_QUEUE = multiprocessing.JoinableQueue(100)  # Allow the task queue to have up to 100 items in it at any
+    TASK_QUEUE = multiprocessing.Queue(100)  # Allow the task queue to have up to 100 items in it at any
     # given time
 except ImportError:
     logging.fatal("No available shared semaphore implementation on the host system! See "
@@ -42,7 +43,7 @@ LOGGING_INFO = {"threadName": "Main", "threadId": "0"}  # Currently unused
 logging.info("Started queues!")
 
 
-def send_task(func, args: list, kwargs: dict, dataOut: multiprocessing.JoinableQueue, d: dict = LOGGING_INFO) -> [int,
+def send_task(func, args: list, kwargs: dict, dataOut: multiprocessing.Queue, d: dict = LOGGING_INFO) -> [int,
                                                                                                                   None]:
     logging.basicConfig(format="[%(asctime)s - %(level)s] %(message)s")
     taskId = round(random.random() * 10000000)  # Generate a random ID for the task
@@ -56,11 +57,6 @@ def send_task(func, args: list, kwargs: dict, dataOut: multiprocessing.JoinableQ
         return 1
     TASK_LIST[taskId] = taskData
     return
-
-
-def return_task(taskData, dataIn: multiprocessing.JoinableQueue, dataOut: multiprocessing.Queue):
-    dataIn.task_done()
-    dataOut.put(taskData)
 
 
 def get_all_completed_tasks(queueInUse):
@@ -144,7 +140,7 @@ class ChatRoomFactory(server.ServerFactory):
             player.send_packet("chat_message", player.buff_type.pack_chat(message) + player.buff_type.pack('B', 0))
 
 
-def worker(inQueue: multiprocessing.JoinableQueue, outQueue: multiprocessing.Queue, workerId: str):
+def worker(inQueue: multiprocessing.Queue, outQueue: multiprocessing.Queue, workerId: str):
     logging.info("Worker ID {0} has started up.".format(workerId))
     while True:
         try:
@@ -154,7 +150,6 @@ def worker(inQueue: multiprocessing.JoinableQueue, outQueue: multiprocessing.Que
             break
         if item is None:  # Sending None down the pipe stops the first worker that grabs it: send it as many times as
             # there are workers and they'll all stop: this is how McPy shuts all of them down safely
-            inQueue.task_done()
             outQueue.put(None)
             break
         func = item["func"]
@@ -165,7 +160,6 @@ def worker(inQueue: multiprocessing.JoinableQueue, outQueue: multiprocessing.Que
             func(*args, **kwargs)  # Calls the requested function: MUST NOT BE DEFINED WITH async def
         except Exception as e:
             logging.warning("Error in thread: {0}".format(str(e)))
-        inQueue.task_done()
     logging.info("Worker ID {0} has completed all tasks.".format(workerId))
 
 
@@ -188,6 +182,7 @@ def main():
     logging.info("Found {0} cores available!".format(avaliCPUs))
     workers = []
     for _ in range(avaliCPUs - 1):  # Reserve one worker for the networking thread
+        del _
         workerId = str(round(random.random() * 100000))
         logging.info("Starting worker ID {0}".format(workerId))
         funcArgs = (TASK_QUEUE, DONE_QUEUE, workerId)
@@ -195,12 +190,11 @@ def main():
         p.start()
         logging.info("Started worker.")
         workers.append(p)
-        del _
     factory = ChatRoomFactory()
     factory.motd = "Chat Room"
     logging.info("Starting networking worker")
     networkingProcess = multiprocessing.Process(target=networker, args=(factory, reactor))
-    networkingProcess.run()
+    networkingProcess.start()
     logging.info("Started worker.")
     try:
         while True:  # Twiddling your thumbs, eh?
@@ -212,7 +206,7 @@ def main():
         for _ in workers:
             TASK_QUEUE.put(None)
             del _  # Gotta save memory, but I guess not when it's shutting down
-        TASK_QUEUE.join()  # Waits for all workers to shut down
+        sleep(2)  # Waits for all workers to shut down (there's gotta be a better way)
         logging.info("Server stopped: goodbye!")
 
 
