@@ -131,7 +131,9 @@ class ChatRoomProtocol(server.ServerProtocol):
         # When we receive a chat message from the player, ask the factory
         # to relay it to all connected players
         p_text = buff.unpack_string()
-        self.factory.send_chat("<{0}> {1}".format(self.display_name, p_text))
+        chat_msg = "<{0}> {1}".format(self.display_name, p_text)
+        self.factory.send_chat(chat_msg)
+        logging.info(chat_msg)
         # Wants a item to be processed
 
 
