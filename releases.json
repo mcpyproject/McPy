@@ -1,1 +1,8 @@
-[]
+[
+  {"mcpyVersion": "v0.0.0-alpha",
+   "minecraftVersion": "1.15.2",
+   "releaseDate": "09 August 2020",
+   "downloadLink": "https://github.com/tazz4843/McPy/releases/download/v0.0.0-alpha/v0.0.0-alpha.zip",
+   "md5sum": "e37b82ed03819c9d46e9fd7f6e90d0dd",
+   "sha1sum": "f7ee3e5fe11f8ccb0c5c3afda7e6bd5ffa7167fa"}
+]
