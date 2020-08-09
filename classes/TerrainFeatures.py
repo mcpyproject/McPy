@@ -1,9 +1,8 @@
 """ The module descripes Terrain features, which are generators used to generate small structures """
 
-from random import randint, choice
-
 from classes import BasicClasses
 from classes.materials import Material
+from random import randint, choice
 
 
 def _generate_block_unsafely(chunk, chunkpos: [int, int, int], pos: [int, int, int], material: Material) -> bool:
