@@ -11,6 +11,7 @@ from twisted.internet import reactor
 from time import sleep
 
 logging.basicConfig(format="[%(asctime)s - %(levelname)s - %(threadName)s] %(message)s", level=logging.DEBUG)
+logging.root.setLevel(logging.NOTSET)
 
 try:
     logging.info("Trying to initialize the Blackfire probe")
@@ -175,7 +176,13 @@ def networker(factory, _reactor):
 
 def main():
     logging.info("Trying to find number of available cores")
-    avaliCPUs = len(os.sched_getaffinity(0))
+    try:
+        avaliCPUs = len(os.sched_getaffinity(0))
+    except AttributeError:
+        # Fix for windows, which doesnt support getaffinity
+        logging.warning("Falling back to multiprocessing cpu_count to calc cores. Most likely getaffinity is not supported on your OS")
+        avaliCPUs = multiprocessing.cpu_count()
+
     if avaliCPUs > 2:
         avaliCPUs = 2  # Force at least 2 workers, just in case only one core is available: one worker to do all the
         # major tasks and one to just take care of networking: THIS WILL BE LAGGY: VERY LAGGY
