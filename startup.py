@@ -10,8 +10,14 @@ import os
 import sys
 import logging
 import json
-import requests
 import subprocess
+try:
+    import requests
+except ImportError:
+    logging.fatal("requests is not installed! Installing right now...")
+    subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'requests'])
+    logging.info("Installed! Rerun this script.")
+    sys.exit(1)
 import zipfile
 import hashlib
 import argparse
@@ -40,6 +46,7 @@ missing = required - installed
 if missing:
     # implement pip as a subprocess:
     subprocess.check_call([sys.executable, '-m', 'pip', 'install', *missing])
+
 
 
 def getReleases() -> list:
