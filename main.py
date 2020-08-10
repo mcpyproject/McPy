@@ -200,7 +200,7 @@ def main():
             "your OS")
         avaliCPUs = multiprocessing.cpu_count()
 
-    if avaliCPUs > 2:
+    if avaliCPUs < 2:
         avaliCPUs = 2  # Force at least 2 workers, just in case only one core is available: one worker to do all the
         # major tasks and one to just take care of networking: THIS WILL BE LAGGY: VERY LAGGY
     logging.info("Found {0} cores available!".format(avaliCPUs))
