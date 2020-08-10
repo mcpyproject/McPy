@@ -1,10 +1,10 @@
 # coding=utf-8
+from math import floor, sqrt
+from random import randint
 
 from classes import BasicClasses
 from classes import TerrainFeatures
 from classes.materials import Material
-from math import floor, sqrt
-from random import randint
 
 # Ore height ranges: the lower range will have a higher chance of being selected
 # generate coal ore between y=1 and y=128 at vein size between 5 and 16 blocks, at a 3 in 100 chance
@@ -357,7 +357,7 @@ class WorldGenerator(SimplexNoise):
                 blockY = scaleNoise(bY, (63, 80)) # Scale the noise to be between min-max y value
                 positions.append((blockX, blockY, blockZ))
         chunk = BasicClasses.Chunk(x, y, z, [], region, width, height)
-        self._regenerate_chunk(x, y, z, region, positions, chunk)
+        await self._regenerate_chunk(x, y, z, region, positions, chunk)
         return chunk
 
     async def _regenerate_chunk(self, x, y, z, region, positions, chunk):
