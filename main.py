@@ -1,13 +1,13 @@
 # coding=utf-8
+import gc
 import logging
 import multiprocessing
 import os
 import random
 import sys
-import gc
 import time
-
 from queue import Empty, Full  # multiprocessing.Queue() full and empty exceptions
+
 from quarry.net import server
 from twisted.internet import reactor
 
@@ -299,3 +299,4 @@ if __name__ == "__main__":
     main()
     if BLACKFIRE_ENABLED:
         probe.end()
+
