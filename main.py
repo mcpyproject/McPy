@@ -5,11 +5,11 @@ import os
 import random
 import sys
 import gc
+import time
 
 from queue import Empty, Full  # multiprocessing.Queue() full and empty exceptions
 from quarry.net import server
 from twisted.internet import reactor
-from time import sleep
 
 logging.basicConfig(format="[%(asctime)s - %(levelname)s - %(threadName)s] %(message)s", level=logging.DEBUG)
 logging.root.setLevel(logging.NOTSET)
@@ -45,6 +45,10 @@ REQUEST_QUEUE = multiprocessing.Queue(1000)  # Queue for items that have a pendi
 LOGGING_INFO = {"threadName": "Main", "threadId": "0"}  # Currently unused
 logging.info("Started queues!")
 
+# Fundamental MC constants
+totalTime = 0  # Time since the world was created in ticks
+dayTime = 0  # Time of day in ticks
+
 
 def send_task(func, args: list, kwargs: dict, dataOut: multiprocessing.Queue) -> [int, None]:
     taskId = round(random.random() * 10000000)  # Generate a random ID for the task
@@ -66,6 +70,10 @@ def get_all_completed_tasks(queueInUse):
             yield queueInUse.get(False)
         except Empty:
             break
+
+
+def addOne(a):
+    return a + 1
 
 
 # The next two classes are from https://quarry.readthedocs.io
@@ -104,6 +112,7 @@ class ChatRoomProtocol(server.ServerProtocol):
 
         # Start sending "Keep Alive" packets
         self.ticker.add_loop(20, self.update_keep_alive)
+        self.ticker.add_loop(100, self.send_day_time_update)
 
         # Announce player joined
         self.factory.send_chat(u"\u00a7e%s has joined." % self.display_name)
@@ -134,7 +143,13 @@ class ChatRoomProtocol(server.ServerProtocol):
         chat_msg = "<{0}> {1}".format(self.display_name, p_text)
         self.factory.send_chat(chat_msg)
         logging.info(chat_msg)
-        # Wants a item to be processed
+
+    def send_day_time_update(self):
+        self.send_packet(self.buff_type.pack(
+            "ii",  # Field one will be a int (or any of Java's integer representations), and so will field 2
+            totalTime,  # Field one is the total overall game time
+            dayTime  # Field two is the current time of day
+        ))
 
 
 class ChatRoomFactory(server.ServerFactory):
@@ -186,7 +201,9 @@ def networker(factory, _reactor):
         logging.info("Startup done! Listening on {0[0]}:{0[1]}".format(listener))
         _reactor.run()
     except Exception as e:
-        logging.exception("Exception in networking thread! {0}".format(str(e)))
+        logging.exception("Exception in networking thread! Restarting... {0}".format(str(e)))
+        time.sleep(5)
+        networker(factory, _reactor)
 
 
 def main():
@@ -221,8 +238,18 @@ def main():
     networkingProcess.start()
     logging.info("Started worker.")
     try:
-        while True:  # Twiddling your thumbs, eh?
-            sleep(60)
+        while True:
+            startTickAt = time.time()
+            finishTickAt = startTickAt + 0.05  # add 50 milliseconds or one tick
+            send_task(addOne, [totalTime], {}, DONE_QUEUE)
+            send_task(addOne, [dayTime], {}, DONE_QUEUE)
+            needToFinishIn = abs(finishTickAt - time.time())
+            try:
+                for item in DONE_QUEUE.get(True, needToFinishIn):
+                    if item["request"]["func"] == addOne:
+                        logging.debug("Added one tick to the server time")
+            except Empty:
+                logging.warning("Failed to complete tick in time! Skipping rest of tick.")
     except KeyboardInterrupt:
         logging.info("Shutting server down!")
         networkingProcess.kill()  # There's no good way to stop this other than kill: but it doesn't use any Queues, so
@@ -230,7 +257,7 @@ def main():
         for _ in workers:
             TASK_QUEUE.put(None)
             del _  # Gotta save memory, but I guess not when it's shutting down
-        sleep(2)  # Waits for all workers to shut down (there's gotta be a better way)
+        time.sleep(2)  # Waits for all workers to shut down (there's gotta be a better way)
         logging.info("Server stopped: goodbye!")
 
 
