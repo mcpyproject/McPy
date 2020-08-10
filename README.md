@@ -15,4 +15,4 @@ Check out the issues and see if you can help solve one. If you've solved it, ope
 Our support server: https://discord.gg/5bRV8ut
 
 ## How can I help break it?
-Join the early alpha server: `play.skulltown.net:30000`
+Join the early alpha server: `play.skulltown.net:30000` with Minecraft version 1.15.2. 1.16+ will not work.
