@@ -137,6 +137,7 @@ class ChatRoomProtocol(server.ServerProtocol):
         server.ServerProtocol.player_left(self)
 
         players.remove([self.uuid, self.display_name])
+        self.update_tablist()
         # Announce player left
         self.factory.send_chat(u"\u00a7e%s has left." % self.display_name)
 
