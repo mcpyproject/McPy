@@ -47,11 +47,11 @@ logging.info("Started queues!")
 
 # Fundamental MC constants
 totalTime = 0  # Time since the world was created in ticks
-dayTime = 0  # Time of day in ticks
+dayTime = 0    # Time of day in ticks
+players = []   # Number of players online
 
 
-def send_task(func, args: list, kwargs: dict, dataOut: multiprocessing.Queue) -> [int, None]:
-    taskId = round(random.random() * 10000000)  # Generate a random ID for the task
+def send_task(func, args: list, kwargs: dict, dataOut: multiprocessing.Queue, taskId: int) -> [int, None]:
     taskData = dict(function=func, args=args, kwargs=kwargs)
     try:
         td = taskData
@@ -74,6 +74,18 @@ def get_all_completed_tasks(queueInUse):
 
 def addOne(a):
     return a + 1
+
+
+def getRandTaskId() -> int:
+    taskId = round(random.random() * 10000000)  # Generate a random ID for the task
+    return taskId
+
+
+def returnTaskId(taskIdList: list, taskId: int = None):
+    if not taskId:
+        taskId = getRandTaskId()
+    taskIdList.append(taskId)
+    return taskIdList, taskId
 
 
 # The next two classes are from https://quarry.readthedocs.io
@@ -114,12 +126,17 @@ class ChatRoomProtocol(server.ServerProtocol):
         self.ticker.add_loop(20, self.update_keep_alive)
         self.ticker.add_loop(100, self.send_day_time_update)
 
+        players.append([self.uuid, self.display_name])
+
+        self.update_tablist()
+
         # Announce player joined
         self.factory.send_chat(u"\u00a7e%s has joined." % self.display_name)
 
     def player_left(self):
         server.ServerProtocol.player_left(self)
 
+        players.remove([self.uuid, self.display_name])
         # Announce player left
         self.factory.send_chat(u"\u00a7e%s has left." % self.display_name)
 
@@ -149,6 +166,18 @@ class ChatRoomProtocol(server.ServerProtocol):
             "ii",  # Field one will be a int (or any of Java's integer representations), and so will field 2
             totalTime,  # Field one is the total overall game time
             dayTime  # Field two is the current time of day
+        ))
+
+    def update_tablist(self):
+        parsedPlayerList = []
+        for item in players:
+            parsePlayerList = [item[0], item[1], 0, 3, 0, True, item[1]]
+            parsedPlayerList.append(parsePlayerList)
+        self.send_packet(self.buff_type.pack(
+            "iia",
+            0,
+            len(players),
+            parsedPlayerList
         ))
 
 
@@ -188,7 +217,7 @@ def worker(inQueue: multiprocessing.Queue, outQueue: multiprocessing.Queue, work
         try:
             result = func(*args, **kwargs)  # Calls the requested function: MUST NOT BE DEFINED WITH async def
         except Exception as e:
-            logging.warning("Error in thread: {0}".format(str(e)))
+            logging.warning("Error in thread ID {0}: {1}".format(workerId, str(e)))
             result = "error"  # idk the best way to define a error result
         outQueue.put({"request": item, "result": result})
     logging.info("Worker ID {0} has completed all tasks.".format(workerId))
@@ -239,21 +268,25 @@ def main():
     logging.info("Started worker.")
     try:
         while True:
+            taskIds = []
             startTickAt = time.time()
             finishTickAt = startTickAt + 0.05  # add 50 milliseconds or one tick
-            send_task(addOne, [totalTime], {}, DONE_QUEUE)
-            send_task(addOne, [dayTime], {}, DONE_QUEUE)
+            taskIds, tid = returnTaskId(taskIds)
+            send_task(addOne, [totalTime], {}, DONE_QUEUE, tid)
+            taskIds, tid = returnTaskId(taskIds)
+            send_task(addOne, [dayTime], {}, DONE_QUEUE, tid)
             needToFinishIn = abs(finishTickAt - time.time())
             try:
+                # noinspection PyArgumentEqualDefault
                 for item in DONE_QUEUE.get(True, needToFinishIn):
-                    if item["request"]["func"] == addOne:
-                        logging.debug("Added one tick to the server time")
+                    for _ in item:
+                        if item["request"]["func"] is addOne:
+                            item["request"]["args"][0] = item["result"]
             except Empty:
                 logging.warning("Failed to complete tick in time! Skipping rest of tick.")
     except KeyboardInterrupt:
         logging.info("Shutting server down!")
-        networkingProcess.kill()  # There's no good way to stop this other than kill: but it doesn't use any Queues, so
-        # this is safe: for now
+        reactor.stop()
         for _ in workers:
             TASK_QUEUE.put(None)
             del _  # Gotta save memory, but I guess not when it's shutting down
