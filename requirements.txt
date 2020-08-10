@@ -1,3 +1,4 @@
 quarry
 twisted
 cryptography
+requests

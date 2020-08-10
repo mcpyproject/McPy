@@ -34,7 +34,7 @@ parsedArgs = parser.parse_args()
 
 
 # Automagically installs all packages required
-required = {"quarry", "twisted", "cryptography"}
+required = {"quarry", "twisted", "cryptography", "requests"}
 installed = {pkg.key for pkg in pkg_resources.working_set}
 missing = required - installed
 if missing:
