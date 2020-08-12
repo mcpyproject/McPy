@@ -9,9 +9,8 @@ import sys
 import time
 from queue import Empty, Full  # multiprocessing.Queue() full and empty exceptions
 
-print(sys.version_info)
 # Check if current python version is 3.8
-if sys.version_info < (3, 9):
+if sys.version_info < (3, 8):
     logging.fatal('McPy needs Python version 3.8.0 or higher to run! Current version is %s.%s.%s' % (sys.version_info.major, sys.version_info.minor, sys.version_info.micro))
     sys.exit(-2)
 
@@ -96,6 +95,113 @@ def returnTaskId(taskIdList: list, taskId: int = None):
     return taskIdList, taskId
 
 
+# The next two classes are from https://quarry.readthedocs.io
+class ChatRoomProtocol(server.ServerProtocol):
+
+    def __init__(self):
+        self.request_item_queue = REQUEST_QUEUE
+
+    def player_joined(self):
+        # Call super. This switches us to "play" mode, marks the player as
+        #   in-game, and does some logging.
+        server.ServerProtocol.player_joined(self)
+
+        # Send "Join Game" packet
+        self.send_packet("join_game",
+                         self.buff_type.pack("iBqiB",
+                                             0,  # entity id
+                                             3,  # game mode
+                                             0,  # dimension
+                                             0,  # hashed seed
+                                             0),  # max players
+                         self.buff_type.pack_string("flat"),  # level type
+                         self.buff_type.pack_varint(1),  # view distance
+                         self.buff_type.pack("??",
+                                             False,  # reduced debug info
+                                             True))  # show respawn screen
+
+        # Send "Player Position and Look" packet
+        self.send_packet("player_position_and_look",
+                         self.buff_type.pack("dddff?",
+                                             0,  # x
+                                             255,  # y
+                                             0,  # z
+                                             0,  # yaw
+                                             0,  # pitch
+                                             0b00000),  # flags
+                         self.buff_type.pack_varint(0))  # teleport id
+
+        # Start sending "Keep Alive" packets
+        self.ticker.add_loop(20, self.update_keep_alive)
+        self.ticker.add_loop(100, self.send_day_time_update)
+
+        players.append([self.uuid, self.display_name])
+
+        self.update_tablist()
+
+        # Announce player joined
+        self.factory.send_chat(u"\u00a7e%s has joined." % self.display_name)
+
+    def player_left(self):
+        server.ServerProtocol.player_left(self)
+
+        players.remove([self.uuid, self.display_name])
+        self.update_tablist()
+        # Announce player left
+        self.factory.send_chat(u"\u00a7e%s has left." % self.display_name)
+
+    def update_keep_alive(self):
+        # Send a "Keep Alive" packet
+
+        # 1.7.x
+        if self.protocol_version <= 338:
+            payload = self.buff_type.pack_varint(0)
+
+        # 1.12.2
+        else:
+            payload = self.buff_type.pack('Q', 0)
+
+        self.send_packet("keep_alive", payload)
+
+    def packet_chat_message(self, buff):
+        # When we receive a chat message from the player, ask the factory
+        # to relay it to all connected players
+        p_text = buff.unpack_string()
+        chat_msg = "<{0}> {1}".format(self.display_name, p_text)
+        self.factory.send_chat(chat_msg)
+        logging.info(chat_msg)
+
+    def send_day_time_update(self):
+        self.send_packet(self.buff_type.pack(
+            "ii",  # Field one will be a int (or any of Java's integer representations), and so will field 2
+            totalTime,  # Field one is the total overall game time
+            dayTime  # Field two is the current time of day
+        ))
+
+    def update_tablist(self):
+        parsedPlayerList = []
+        for item in players:
+            parsePlayerList = [item[0], item[1], 0, 3, 0, True, item[1]]
+            parsedPlayerList.append(parsePlayerList)
+        self.send_packet(self.buff_type.pack(
+            "iia",
+            0,
+            len(players),
+            parsedPlayerList
+        ))
+
+
+class ChatRoomFactory(server.ServerFactory):
+
+    def __init__(self):
+        self.protocol = ChatRoomProtocol
+        self.motd = "Chat Room Server"  # Later customizable
+
+    def send_chat(self, message):
+        for player in self.players:
+            player.send_packet("chat_message", player.buff_type.pack_chat(message) + player.buff_type.pack('B', 0))
+
+
 def worker(inQueue: multiprocessing.Queue, outQueue: multiprocessing.Queue, workerId: str):
     logging.info("Worker ID {0} has started up.".format(workerId))
     while True:
@@ -130,7 +236,7 @@ def worker(inQueue: multiprocessing.Queue, outQueue: multiprocessing.Queue, work
 
 
 def networker(factory, _reactor):
-    listener = ("0.0.0.0", 25565)
+    listener = ("127.0.0.1", 25565)
     try:
         factory.listen(*listener)
         logging.info("Startup done! Listening on {0[0]}:{0[1]}".format(listener))
@@ -144,20 +250,20 @@ def networker(factory, _reactor):
 def main():
     logging.info("Trying to find number of available cores")
     try:
-        avaliCPUs = len(os.sched_getaffinity(0))
+        availCPUs = len(os.sched_getaffinity(0))
     except AttributeError:
         # Fix for windows, which doesnt support getaffinity
         logging.warning(
             "Falling back to multiprocessing cpu_count to calc cores. Most likely getaffinity is not supported on "
             "your OS")
-        avaliCPUs = multiprocessing.cpu_count()
+        availCPUs = multiprocessing.cpu_count()
 
-    if avaliCPUs < 2:
-        avaliCPUs = 2  # Force at least 2 workers, just in case only one core is available: one worker to do all the
+    if availCPUs < 2:
+        availCPUs = 2  # Force at least 2 workers, just in case only one core is available: one worker to do all the
         # major tasks and one to just take care of networking: THIS WILL BE LAGGY: VERY LAGGY
-    logging.info("Found {0} cores available!".format(avaliCPUs))
+    logging.info("Found {0} cores available!".format(availCPUs))
     workers = []
-    for _ in range(avaliCPUs - 1):  # Reserve one worker for the networking thread
+    for _ in range(availCPUs - 1):  # Reserve one worker for the networking thread
         del _
         workerId = str(round(random.random() * 100000))
         logging.info("Starting worker ID {0}".format(workerId))
@@ -182,14 +288,16 @@ def main():
             taskIds, tid = returnTaskId(taskIds)
             send_task(addOne, [dayTime], {}, DONE_QUEUE, tid)
             needToFinishIn = abs(finishTickAt - time.time())
-            try:
-                # noinspection PyArgumentEqualDefault
-                for item in DONE_QUEUE.get(True, needToFinishIn):
-                    for _ in item:
-                        if item["request"]["func"] is addOne:
-                            item["request"]["args"][0] = item["result"]
-            except Empty:
-                logging.warning("Failed to complete tick in time! Skipping rest of tick.")
+            # I've commented these lines bc it gives me an error
+            # try:
+            #     # noinspection PyArgumentEqualDefault
+            #     for item in DONE_QUEUE.get(True, needToFinishIn):
+            #         for _ in item:
+            #             print(item)
+            #             if item["request"]["func"] is addOne:
+            #                 item["request"]["args"][0] = item["result"]
+            # except Empty:
+            #     logging.warning("Failed to complete tick in time! Skipping rest of tick.")
     except KeyboardInterrupt:
         logging.info("Shutting server down!")
         reactor.stop()
@@ -198,6 +306,7 @@ def main():
             del _  # Gotta save memory, but I guess not when it's shutting down
         time.sleep(2)  # Waits for all workers to shut down (there's gotta be a better way)
         logging.info("Server stopped: goodbye!")
+    sys.exit(0)
 
 if __name__ == '__main__':
     main()

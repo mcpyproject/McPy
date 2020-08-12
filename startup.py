@@ -6,13 +6,19 @@
 # "downloadLink" = URL to the download of this server archive
 # "md5sum" = MD5 sum of the download
 # "sha1sum" = SHA1 sum of the download
+import json
+import logging
 import os
 import sys
-import logging
+import subprocess
 # Set default loggin to INFO
 logging.basicConfig(level="INFO")
-import json
-import subprocess
+
+# Check if current python version is 3.8
+if sys.version_info < (3, 8):
+    logging.fatal('McPy needs Python version 3.8.0 or higher to run! Current version is %s.%s.%s' % (sys.version_info.major, sys.version_info.minor, sys.version_info.micro))
+    sys.exit(-4)
+
 try:
     import requests
 except ImportError:
@@ -51,11 +57,13 @@ installed = {pkg.key for pkg in pkg_resources.working_set}
 missing = required - installed
 if missing:
     # implement pip as a subprocess:
-    subprocess.check_call([sys.executable, '-m', 'pip', 'install', *missing])
+    # This prevents SyntaxError while launching with python2
+    data = [sys.executable, '-m', 'pip', 'install'] + [miss for miss in missing]
+    subprocess.check_call(data)
 
 
 
-def getReleases() -> list:
+def getReleases():
     global releases
     try:
         if releases is not None:
@@ -99,11 +107,6 @@ def checkSums(fileName, bufferSize=64*1024):
 
 releases = getReleases()
 
-# Check if current python version is 3.8
-if sys.version_info < (3, 8):
-    logging.fatal('McPy needs Python version 3.8.0 or higher to run! Current version is %s.%s.%s' % (sys.version_info.major, sys.version_info.minor, sys.version_info.micro))
-    sys.exit(-4)
-
 if parsedArgs.versions:
     for item in releases:
         print("Release version {0} released on {1} for Minecraft version {2}".format(item["mcpyVersion"],
@@ -113,8 +116,9 @@ if parsedArgs.versions:
     sys.exit(-3)
 
 version = parsedArgs.useversion
-os.mkdir("test")
-if not os.path.exists("main.py"):
+
+currentDir = os.listdir(".")
+if "McPy" not in currentDir:
     logging.warning("main.py not found! Downloading McPy again...")
     if version == "latest":
         logging.info("Downloading latest version...")
@@ -149,14 +153,14 @@ if not os.path.exists("main.py"):
         sys.exit(-10)
     logging.info("Extracting file...")
     with zipfile.ZipFile("mcPyTempFile.zip") as mcpyZipFile:
-        mcpyZipFile.extractall(path='test')
+        mcpyZipFile.extractall()
     # Delete temp file mcPyTempFile.zip
     os.remove("mcPyTempFile.zip")
     logging.info("To run McPy, rerun this script!")
 else:
     logging.info("McPy found! Running it...")
-    data = [sys.executable, 'main.py']
+    data = [sys.executable, 'McPy/main.py']
     if parsedArgs.debug:
         data.append('--debug')
-    #mcpyProcess = subprocess.check_call(data)
+    mcpyProcess = subprocess.check_call(data)
     logging.info("startup.py: Server closed")
