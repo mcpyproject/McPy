@@ -9,19 +9,8 @@ import sys
 import time
 from queue import Empty, Full  # multiprocessing.Queue() full and empty exceptions
 
-print(sys.version_info)
-# Check if current python version is 3.8
-if sys.version_info < (3, 9):
-    logging.fatal('McPy needs Python version 3.8.0 or higher to run! Current version is %s.%s.%s' % (sys.version_info.major, sys.version_info.minor, sys.version_info.micro))
-    sys.exit(-2)
-
 from quarry.net import server
 from twisted.internet import reactor
-
-# Import all classes before importing the main method
-print("Importing classes, please wait ...")
-#import classes
-print("Classes imported !")
 
 logging.basicConfig(format="[%(asctime)s - %(levelname)s - %(threadName)s] %(message)s", level=logging.DEBUG)
 logging.root.setLevel(logging.NOTSET)
@@ -38,6 +27,10 @@ else:
     probe.initialize()
     # probe.enable()
     logging.info("Enabled!")
+
+if not sys.version_info.minor >= 8 and sys.version_info.major >= 3:
+    logging.fatal("McPy needs Python version 3.8.0 or higher to run!")
+    sys.exit(-2)
 
 logging.info("Starting queues...")
 TASK_LIST = {}
@@ -201,6 +194,6 @@ def main():
 
 if __name__ == '__main__':
     main()
-    if BLACKFIRE_ENABLED:
-        probe.end()
+if BLACKFIRE_ENABLED:
+    probe.end()
 

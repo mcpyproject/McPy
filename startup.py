@@ -9,6 +9,8 @@
 import os
 import sys
 import logging
+# Set default loggin to INFO
+logging.basicConfig(level="INFO")
 import json
 import subprocess
 try:
@@ -32,11 +34,15 @@ parser.add_argument("--useversion",    # Command line flag to use McPy version
 parser.add_argument("--versions",         # Command line flag to print out list of all versions
                     action="store_true",  # If this flag is defined, parsedArgs.versions will be True: else False
                     help="print out a list of all McPy versions")
-parser.add_argument("--pythonlocation",  # Command line flag to define a Python interpeter location
-                    action="store",      # Stores the result of this flag in parsedArgs.pythonlocation
-                    default=None,        # If not passed, defaults to None
-                    help="location of the Python 3.8 interpeter: defaults to the one found in the path")
+parser.add_argument("--debug",          # Command line flag to set logging in DEBUG mode
+                    default=False,    # Defaults to "false" if this flag is not passed
+                    help="set logging to DEBUG level")
 parsedArgs = parser.parse_args()
+
+if parsedArgs.debug:
+    if parsedArgs.debug == "False":
+        parsedArgs.debug = False
+    logging.basicConfig(level="DEBUG")
 
 
 # Automagically installs all packages required
@@ -93,16 +99,10 @@ def checkSums(fileName, bufferSize=64*1024):
 
 releases = getReleases()
 
-systemPath = ":".join(sys.path)
-if "python3.8" not in systemPath:
-    if parsedArgs.pythonlocation is None:
-        logging.fatal("Python 3.8 was not found in the system path! You can specify the Python 3.8 executable location"
-                      "using --pythonlocation <pathToExecutable>")
-        sys.exit(-4)
-    else:
-        PYTHONINPATH = False
-else:
-    PYTHONINPATH = True
+# Check if current python version is 3.8
+if sys.version_info < (3, 8):
+    logging.fatal('McPy needs Python version 3.8.0 or higher to run! Current version is %s.%s.%s' % (sys.version_info.major, sys.version_info.minor, sys.version_info.micro))
+    sys.exit(-4)
 
 if parsedArgs.versions:
     for item in releases:
@@ -113,10 +113,8 @@ if parsedArgs.versions:
     sys.exit(-3)
 
 version = parsedArgs.useversion
-pythonlocation = parsedArgs.pythonlocation
-
-currentDir = os.listdir(".")
-if "McPy" not in currentDir:
+os.mkdir("test")
+if not os.path.exists("main.py"):
     logging.warning("main.py not found! Downloading McPy again...")
     if version == "latest":
         logging.info("Downloading latest version...")
@@ -139,7 +137,7 @@ if "McPy" not in currentDir:
         logging.error("Failed to download the server file! Rerun this script. Error: {0}".format(str(e)))
     else:
         logging.info("Successfully downloaded McPy!")
-    logging.info("Unzipping files...")
+    logging.info("Downloading zip file...")
     with open("mcPyTempFile.zip", "wb") as zf:
         for j in downloadedServer.iter_content(100000):  # 100,000 bytes each time to be safe
             zf.write(j)
@@ -149,13 +147,16 @@ if "McPy" not in currentDir:
         logging.fatal("MD5 or SHA-1 sum does NOT MATCH! This could be a corruption, or it could be something more "
                       "serious, like someone tampering with your connection.")
         sys.exit(-10)
+    logging.info("Extracting file...")
     with zipfile.ZipFile("mcPyTempFile.zip") as mcpyZipFile:
-        mcpyZipFile.extractall()
+        mcpyZipFile.extractall(path='test')
+    # Delete temp file mcPyTempFile.zip
+    os.remove("mcPyTempFile.zip")
     logging.info("To run McPy, rerun this script!")
 else:
     logging.info("McPy found! Running it...")
-    if PYTHONINPATH:
-        mcpyProcess = subprocess.Popen([sys.executable, os.path.join(os.getcwd(), os.path.join("McPy", "main.py"))])
-    else:
-        mcpyProcess = subprocess.Popen("{0} McPy/main.py".format(pythonlocation))
-    mcpyProcess.wait()
+    data = [sys.executable, 'main.py']
+    if parsedArgs.debug:
+        data.append('--debug')
+    #mcpyProcess = subprocess.check_call(data)
+    logging.info("startup.py: Server closed")

@@ -2,8 +2,8 @@
 # coding=utf-8
 import asyncio
 
-from classes import Exceptions
-from classes.materials import Material
+from . import Exceptions
+from .blocks.Materials import Material
 
 
 class Block:
