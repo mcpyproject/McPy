@@ -236,7 +236,7 @@ def worker(inQueue: multiprocessing.Queue, outQueue: multiprocessing.Queue, work
 
 
 def networker(factory, _reactor):
-    listener = ("127.0.0.1", 25565)
+    listener = ("0.0.0.0", 25565)
     try:
         factory.listen(*listener)
         logging.info("Startup done! Listening on {0[0]}:{0[1]}".format(listener))
