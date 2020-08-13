@@ -17,55 +17,19 @@ if sys.version_info < (3, 8):
 from quarry.net import server
 from twisted.internet import reactor
 
-# Import all classes before importing the main method
-print("Importing classes, please wait ...")
-#import classes
-print("Classes imported !")
 
-logging.basicConfig(format="[%(asctime)s - %(levelname)s - %(threadName)s] %(message)s", level=logging.DEBUG)
-logging.root.setLevel(logging.NOTSET)
-
-try:
-    logging.info("Trying to initialize the Blackfire probe")
-    # noinspection PyUnresolvedReferences
-    from blackfire import probe  # Profiler: https://blackfire.io free with the Git Student Package
-except ImportError:
-    BLACKFIRE_ENABLED = False
-    logging.info("Blackfire not installed: passing")
-else:
-    BLACKFIRE_ENABLED = True
-    probe.initialize()
-    # probe.enable()
-    logging.info("Enabled!")
-
-logging.info("Starting queues...")
-TASK_LIST = {}
-try:
-    TASK_QUEUE = multiprocessing.Queue(100)  # Allow the task queue to have up to 100 items in it at any
-    # given time
-except ImportError:
-    logging.fatal("No available shared semaphore implementation on the host system! See "
-                  "https://bugs.python.org/issue3770 for more info.")  # click the bug link
-    sys.exit(-1)
-DONE_QUEUE = multiprocessing.Queue(1000)  # Allow the done queue to have up to 1,000 items in it at any given time
-REQUEST_QUEUE = multiprocessing.Queue(1000)  # Queue for items that have a pending request to be executed
-LOGGING_INFO = {"threadName": "Main", "threadId": "0"}  # Currently unused
-logging.info("Started queues!")
-
-# Fundamental MC constants
-totalTime = 0  # Time since the world was created in ticks
-dayTime = 0    # Time of day in ticks
-players = []   # Number of players online
-
-
-def send_task(func, args: list, kwargs: dict, dataOut: multiprocessing.Queue, taskId: int) -> [int, None]:
-    taskData = dict(function=func, args=args, kwargs=kwargs)
+def send_task(func, args: list, kwargs: dict, dataIn: multiprocessing.Queue, taskId: int) -> [int, None]:
+    taskData = {
+        'func': func,
+        'args': args,
+        'kwargs': kwargs
+    }
     try:
         td = taskData
         td["id"] = taskId
-        dataOut.put_nowait(taskData)  # If queue is full, throw queue.Full exception
+        dataIn.put_nowait(taskData)  # If queue is full, throw queue.Full exception
     except Full:
-        logging.warning("Queue {0} is full!".format(dataOut.__name__))
+        logging.warning("Queue {0} is full!".format(dataIn.__name__))
         return 1
     TASK_LIST[taskId] = taskData
     return
@@ -231,7 +195,10 @@ def worker(inQueue: multiprocessing.Queue, outQueue: multiprocessing.Queue, work
         except Exception as e:
             logging.warning("Error in thread ID {0}: {1}".format(workerId, str(e)))
             result = "error"  # idk the best way to define a error result
-        outQueue.put({"request": item, "result": result})
+        outQueue.put({
+            "request": item,
+            "result": result
+        })
     logging.info("Worker ID {0} has completed all tasks.".format(workerId))
 
 
@@ -248,6 +215,7 @@ def networker(factory, _reactor):
 
 
 def main():
+    # Here start the server :D
     logging.info("Trying to find number of available cores")
     try:
         availCPUs = len(os.sched_getaffinity(0))
@@ -279,25 +247,31 @@ def main():
     networkingProcess.start()
     logging.info("Started worker.")
     try:
+        tick = 0
         while True:
+            print("Tick = %d" % tick)
             taskIds = []
             startTickAt = time.time()
-            finishTickAt = startTickAt + 0.05  # add 50 milliseconds or one tick
+            finishTickAt = startTickAt + 0.05 # add 50 milliseconds or one tick
+            # TODO The next 4 lines are here only for TESTING, don't forget to remove these in the futur (and to move it to another place, like inside World.tick function)
             taskIds, tid = returnTaskId(taskIds)
-            send_task(addOne, [totalTime], {}, DONE_QUEUE, tid)
+            send_task(addOne, [totalTime], {}, TASK_QUEUE, tid)
             taskIds, tid = returnTaskId(taskIds)
-            send_task(addOne, [dayTime], {}, DONE_QUEUE, tid)
+            send_task(addOne, [dayTime], {}, TASK_QUEUE, tid)
+
             needToFinishIn = abs(finishTickAt - time.time())
             # I've commented these lines bc it gives me an error
-            # try:
-            #     # noinspection PyArgumentEqualDefault
-            #     for item in DONE_QUEUE.get(True, needToFinishIn):
-            #         for _ in item:
-            #             print(item)
-            #             if item["request"]["func"] is addOne:
-            #                 item["request"]["args"][0] = item["result"]
-            # except Empty:
-            #     logging.warning("Failed to complete tick in time! Skipping rest of tick.")
+            try:
+                # noinspection PyArgumentEqualDefault
+                # The goal here is to loop over each element in DONE_QUEUE within a specific amount of time.
+                for item in DONE_QUEUE.get(True, needToFinishIn):
+                    if item["request"]["func"] is addOne:
+                        item["request"]["args"][0] = item["result"]
+            except Empty:
+                # No needs to logs, maybe there is no task ...
+                #logging.warning("Failed to complete tick in time! Skipping rest of tick.")
+                pass
+            tick += 1
     except KeyboardInterrupt:
         logging.info("Shutting server down!")
         reactor.stop()
@@ -309,6 +283,46 @@ def main():
     sys.exit(0)
 
 if __name__ == '__main__':
+    # Import all classes before importing the main method
+    print("Importing classes, please wait ...")
+    #import classes
+    print("Classes imported !")
+
+    # TODO Use --debug flag
+    logging.basicConfig(format="[%(asctime)s - %(levelname)s - %(threadName)s] %(message)s", level=logging.DEBUG)
+    logging.root.setLevel(logging.NOTSET)
+
+    try:
+        logging.info("Trying to initialize the Blackfire probe")
+        # noinspection PyUnresolvedReferences
+        from blackfire import probe  # Profiler: https://blackfire.io free with the Git Student Package
+    except ImportError:
+        BLACKFIRE_ENABLED = False
+        logging.info("Blackfire not installed: passing")
+    else:
+        BLACKFIRE_ENABLED = True
+        probe.initialize()
+        # probe.enable()
+        logging.info("Enabled!")
+
+    logging.info("Starting queues...")
+    TASK_LIST = {}
+    try:
+        TASK_QUEUE = multiprocessing.Queue(100)  # Allow the task queue to have up to 100 items in it at any
+        # given time
+    except ImportError:
+        logging.fatal("No available shared semaphore implementation on the host system! See "
+                    "https://bugs.python.org/issue3770 for more info.")  # click the bug link
+        sys.exit(-1)
+    DONE_QUEUE = multiprocessing.Queue(1000)  # Allow the done queue to have up to 1,000 items in it at any given time
+    REQUEST_QUEUE = multiprocessing.Queue(1000)  # Queue for items that have a pending request to be executed
+    LOGGING_INFO = {"threadName": "Main", "threadId": "0"}  # Currently unused
+    logging.info("Started queues!")
+
+    # Fundamental MC constants
+    totalTime = 0  # Time since the world was created in ticks
+    dayTime = 0    # Time of day in ticks
+    players = []   # Number of players online
     main()
     if BLACKFIRE_ENABLED:
         probe.end()
