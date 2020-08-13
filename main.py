@@ -166,8 +166,17 @@ class ChatRoomFactory(server.ServerFactory):
             player.send_packet("chat_message", player.buff_type.pack_chat(message) + player.buff_type.pack('B', 0))
 
 
-def worker(inQueue: multiprocessing.Queue, outQueue: multiprocessing.Queue, workerId: str):
-    logging.info("Worker ID {0} has started up.".format(workerId))
+def log(loggingQueue: multiprocessing.Queue, message, id, type = "info", exception=None):
+    loggingQueue.put({
+        "type": type,
+        "id": str(id),
+        "message": message,
+        "exception": exception
+    })
+
+
+def worker(inQueue: multiprocessing.Queue, outQueue: multiprocessing.Queue, loggingQueue: multiprocessing.Queue, workerId: str):
+    log(loggingQueue, "Worker started up.", workerId)
     while True:
         try:
             item = inQueue.get()  # Waits for a new item to appear on the queue
@@ -192,26 +201,26 @@ def worker(inQueue: multiprocessing.Queue, outQueue: multiprocessing.Queue, work
         # noinspection PyBroadException
         try:
             result = func(*args, **kwargs)  # Calls the requested function: MUST NOT BE DEFINED WITH async def
-        except Exception as e:
-            logging.warning("Error in thread ID {0}: {1}".format(workerId, str(e)))
+        except Exception as ex:
+            log(loggingQueue, "Exception in Thread", workerId, type="exception", exception=ex)
             result = "error"  # idk the best way to define a error result
         outQueue.put({
             "request": item,
             "result": result
         })
-    logging.info("Worker ID {0} has completed all tasks.".format(workerId))
+    log(loggingQueue, "Tasks completed", workerId)
 
 
-def networker(factory, _reactor):
+def networker(factory, _reactor, loggingQueue: multiprocessing.Queue):
     listener = ("0.0.0.0", 25565)
     try:
         factory.listen(*listener)
-        logging.info("Startup done! Listening on {0[0]}:{0[1]}".format(listener))
+        log(loggingQueue, "Startup done! Listening on {0[0]}:{0[1]}".format(listener), "Networker")
         _reactor.run()
-    except Exception as e:
-        logging.exception("Exception in networking thread! Restarting... {0}".format(str(e)))
+    except Exception as ex:
+        log(loggingQueue, "Exception in networking thread! Restarting...", "Networker", type="exception", exception=ex)
         time.sleep(5)
-        networker(factory, _reactor)
+        networker(factory, _reactor, logging)
 
 
 def main():
@@ -235,7 +244,7 @@ def main():
         del _
         workerId = str(round(random.random() * 100000))
         logging.info("Starting worker ID {0}".format(workerId))
-        funcArgs = (TASK_QUEUE, DONE_QUEUE, workerId)
+        funcArgs = (TASK_QUEUE, DONE_QUEUE, LOGGING_QUEUE, workerId)
         p = multiprocessing.Process(target=worker, args=funcArgs)
         p.start()
         logging.info("Started worker.")
@@ -243,13 +252,14 @@ def main():
     factory = ChatRoomFactory()
     factory.motd = "Chat Room"
     logging.info("Starting networking worker")
-    networkingProcess = multiprocessing.Process(target=networker, args=(factory, reactor))
+    funcArgs = (factory, reactor, LOGGING_QUEUE)
+    networkingProcess = multiprocessing.Process(target=networker, args=funcArgs)
     networkingProcess.start()
     logging.info("Started worker.")
     try:
         tick = 0
         while True:
-            print("Tick = %d" % tick)
+            # print("Tick = %d" % tick)
             taskIds = []
             startTickAt = time.time()
             finishTickAt = startTickAt + 0.05 # add 50 milliseconds or one tick
@@ -258,28 +268,54 @@ def main():
             send_task(addOne, [totalTime], {}, TASK_QUEUE, tid)
             taskIds, tid = returnTaskId(taskIds)
             send_task(addOne, [dayTime], {}, TASK_QUEUE, tid)
-
-            needToFinishIn = abs(finishTickAt - time.time())
-            # I've commented these lines bc it gives me an error
             try:
                 # noinspection PyArgumentEqualDefault
-                # The goal here is to loop over each element in DONE_QUEUE within a specific amount of time.
-                for item in DONE_QUEUE.get(True, needToFinishIn):
-                    if item["request"]["func"] is addOne:
+                # The goal here is to loop over each element in DONE_QUEUE
+                while True:
+                    # Get item in DONE_QUEUE. If DONE_QUEUE is empty, it'll raise an Empty Exception
+                    item = DONE_QUEUE.get(False)
+                    if item and item["request"]["func"] is addOne:
                         item["request"]["args"][0] = item["result"]
             except Empty:
                 # No needs to logs, maybe there is no task ...
                 #logging.warning("Failed to complete tick in time! Skipping rest of tick.")
                 pass
+            # Log messages from other process
+            try:
+                while True:
+                    # Get item in LOGGING_QUEUE. If LOGGING_QUEUE is empty, it'll raise an Empty Exception
+                    item = LOGGING_QUEUE.get(False)
+                    if item:
+                        message = "Thread #%s: %s" % (item['id'], item['message'])
+                        if item['type'] == 'debug':
+                            logging.debug(message)
+                        elif item['type'] == 'info':
+                            logging.info(message)
+                        elif item['type'] == 'warn':
+                            logging.warn(message)
+                        elif item['type'] == 'error':
+                            logging.error(message)
+                        elif item['type'] == 'exception':
+                            logging.exception(message, item['exception'])
+            except Empty:
+                pass
+            # Wait for a specific amount of time if needed
+            needToFinishIn = finishTickAt - time.time()
+            if needToFinishIn > 0:
+                #logging.debug("Waiting for %.2f ms" % needToFinishIn)
+                time.sleep(needToFinishIn)
+
             tick += 1
     except KeyboardInterrupt:
-        logging.info("Shutting server down!")
+        pass
+    logging.info("Shutting server down!")
+    if reactor.running:
         reactor.stop()
-        for _ in workers:
-            TASK_QUEUE.put(None)
-            del _  # Gotta save memory, but I guess not when it's shutting down
-        time.sleep(2)  # Waits for all workers to shut down (there's gotta be a better way)
-        logging.info("Server stopped: goodbye!")
+    for _ in workers:
+        TASK_QUEUE.put(None)
+        del _  # Gotta save memory, but I guess not when it's shutting down
+    time.sleep(2)  # Waits for all workers to shut down (there's gotta be a better way)
+    logging.info("Server stopped: goodbye!")
     sys.exit(0)
 
 if __name__ == '__main__':
@@ -302,7 +338,7 @@ if __name__ == '__main__':
     else:
         BLACKFIRE_ENABLED = True
         probe.initialize()
-        # probe.enable()
+        #probe.enable()
         logging.info("Enabled!")
 
     logging.info("Starting queues...")
@@ -314,8 +350,9 @@ if __name__ == '__main__':
         logging.fatal("No available shared semaphore implementation on the host system! See "
                     "https://bugs.python.org/issue3770 for more info.")  # click the bug link
         sys.exit(-1)
-    DONE_QUEUE = multiprocessing.Queue(1000)  # Allow the done queue to have up to 1,000 items in it at any given time
-    REQUEST_QUEUE = multiprocessing.Queue(1000)  # Queue for items that have a pending request to be executed
+    DONE_QUEUE = multiprocessing.Queue(1000)    # Allow the done queue to have up to 1,000 items in it at any given time
+    REQUEST_QUEUE = multiprocessing.Queue(1000) # Queue for items that have a pending request to be executed
+    LOGGING_QUEUE = multiprocessing.Queue(1000) # Queue for logging
     LOGGING_INFO = {"threadName": "Main", "threadId": "0"}  # Currently unused
     logging.info("Started queues!")
 
