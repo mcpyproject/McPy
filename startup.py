@@ -48,7 +48,8 @@ parsedArgs = parser.parse_args()
 if parsedArgs.debug:
     if parsedArgs.debug == "False":
         parsedArgs.debug = False
-    logging.basicConfig(level="DEBUG")
+    else:
+        logging.basicConfig(level="DEBUG")
 
 
 # Automagically installs all packages required
