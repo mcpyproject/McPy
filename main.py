@@ -95,8 +95,7 @@ class ChatRoomProtocol(server.ServerProtocol):
         self.ticker.add_loop(20, self.update_keep_alive)
         self.ticker.add_loop(100, self.send_day_time_update)
 
-        self.sharedManager['players'].append([self.uuid, self.display_name])
-
+        self._players.append([self.uuid, self.display_name])
         #self.update_tablist()
 
         # Announce player joined
@@ -105,7 +104,7 @@ class ChatRoomProtocol(server.ServerProtocol):
     def player_left(self):
         super(ChatRoomProtocol, self).player_left()
 
-        self.sharedManager['players'].remove([self.uuid, self.display_name])
+        self._players.remove([self.uuid, self.display_name])
         #self.update_tablist()
         # Announce player left
         self.factory.send_chat(u"\u00a7e%s has left." % self.display_name)
@@ -140,23 +139,24 @@ class ChatRoomProtocol(server.ServerProtocol):
 
     def update_tablist(self):
         parsedPlayerList = []
-        for item in self.sharedManager['players']:
+        for item in self._players:
             parsePlayerList = [item[0], item[1], 0, 3, 0, True, item[1]]
             parsedPlayerList.append(parsePlayerList)
         self.send_packet(self.buff_type.pack(
             "iia",
             0,
-            len(self.sharedManager['players']),
+            len(self._players),
             parsedPlayerList
         ))
 
 
 class ChatRoomFactory(server.ServerFactory):
 
-    def __init__(self, sharedManager, loggingQueue: multiprocessing.Queue):
+    def __init__(self, sharedManager, players, loggingQueue: multiprocessing.Queue):
         super(ChatRoomFactory, self).__init__()
         self.protocol = ChatRoomProtocol
         self.protocol.sharedManager = self.sharedManager = sharedManager
+        self.protocol._players = self._players = players
         self.protocol.logging = loggingQueue
         self.motd = "Chat Room Server"  # Later customizable
 
@@ -210,8 +210,8 @@ def worker(inQueue: multiprocessing.Queue, outQueue: multiprocessing.Queue, logg
     log(loggingQueue, "Tasks completed", workerId)
 
 
-def networker(sharedManager, loggingQueue: multiprocessing.Queue):
-    factory = ChatRoomFactory(sharedManager, loggingQueue)
+def networker(sharedManager, players, loggingQueue: multiprocessing.Queue):
+    factory = ChatRoomFactory(sharedManager, players, loggingQueue)
     factory.motd = "Chat Room"
     factory.logging = loggingQueue
     logging.info("Starting networking worker")
@@ -223,7 +223,7 @@ def networker(sharedManager, loggingQueue: multiprocessing.Queue):
     except Exception as ex:
         log(loggingQueue, "Exception in networking thread! Restarting...", "Networker", type="exception", exception=ex)
         time.sleep(5)
-        networker(sharedManager, logging)
+        networker(sharedManager, players, logging)
 
 
 def main():
@@ -253,11 +253,11 @@ def main():
         logging.info("Started worker.")
         workers.append(p)
     sharedManager = multiprocessing.Manager().dict()
-    sharedManager['players'] = []      # Time since the world was created in ticks
-    sharedManager['totalTime'] = 0     # Time of day in ticks
+    sharedManager['totalTime'] = 0      # Time of day in ticks
     sharedManager['dayTime'] = 0        # Number of players online
+    players = multiprocessing.Manager().list()
     logging.info("Starting networking worker")
-    funcArgs = (sharedManager, LOGGING_QUEUE)
+    funcArgs = (sharedManager, players, LOGGING_QUEUE)
     networkingProcess = multiprocessing.Process(target=networker, args=funcArgs)
     networkingProcess.start()
     logging.info("Started worker.")
