@@ -62,13 +62,8 @@ def returnTaskId(taskIdList: list, taskId: int = None):
 # The next two classes are from https://quarry.readthedocs.io
 class ChatRoomProtocol(server.ServerProtocol):
 
-    def __init__(self):
-        self.request_item_queue = REQUEST_QUEUE
-
     def player_joined(self):
-        # Call super. This switches us to "play" mode, marks the player as
-        #   in-game, and does some logging.
-        server.ServerProtocol.player_joined(self)
+        super(ChatRoomProtocol, self).player_joined()
 
         # Send "Join Game" packet
         self.send_packet("join_game",
@@ -96,21 +91,22 @@ class ChatRoomProtocol(server.ServerProtocol):
                          self.buff_type.pack_varint(0))  # teleport id
 
         # Start sending "Keep Alive" packets
+        # TODO These 2 lines don't work
         self.ticker.add_loop(20, self.update_keep_alive)
         self.ticker.add_loop(100, self.send_day_time_update)
 
-        players.append([self.uuid, self.display_name])
+        self.sharedManager['players'].append([self.uuid, self.display_name])
 
-        self.update_tablist()
+        #self.update_tablist()
 
         # Announce player joined
         self.factory.send_chat(u"\u00a7e%s has joined." % self.display_name)
 
     def player_left(self):
-        server.ServerProtocol.player_left(self)
+        super(ChatRoomProtocol, self).player_left()
 
-        players.remove([self.uuid, self.display_name])
-        self.update_tablist()
+        self.sharedManager['players'].remove([self.uuid, self.display_name])
+        #self.update_tablist()
         # Announce player left
         self.factory.send_chat(u"\u00a7e%s has left." % self.display_name)
 
@@ -136,29 +132,32 @@ class ChatRoomProtocol(server.ServerProtocol):
         logging.info(chat_msg)
 
     def send_day_time_update(self):
-        self.send_packet(self.buff_type.pack(
-            "ii",  # Field one will be a int (or any of Java's integer representations), and so will field 2
-            totalTime,  # Field one is the total overall game time
-            dayTime  # Field two is the current time of day
+        self.send_packet("time_update", self.buff_type.pack(
+            "QQ",  # Field one will be a int (or any of Java's integer representations), and so will field 2
+            self.sharedManager['totalTime'],  # Field one is the total overall game time
+            self.sharedManager['dayTime']  # Field two is the current time of day
         ))
 
     def update_tablist(self):
         parsedPlayerList = []
-        for item in players:
+        for item in self.sharedManager['players']:
             parsePlayerList = [item[0], item[1], 0, 3, 0, True, item[1]]
             parsedPlayerList.append(parsePlayerList)
         self.send_packet(self.buff_type.pack(
             "iia",
             0,
-            len(players),
+            len(self.sharedManager['players']),
             parsedPlayerList
         ))
 
 
 class ChatRoomFactory(server.ServerFactory):
 
-    def __init__(self):
+    def __init__(self, sharedManager, loggingQueue: multiprocessing.Queue):
+        super(ChatRoomFactory, self).__init__()
         self.protocol = ChatRoomProtocol
+        self.protocol.sharedManager = self.sharedManager = sharedManager
+        self.protocol.logging = loggingQueue
         self.motd = "Chat Room Server"  # Later customizable
 
     def send_chat(self, message):
@@ -211,16 +210,20 @@ def worker(inQueue: multiprocessing.Queue, outQueue: multiprocessing.Queue, logg
     log(loggingQueue, "Tasks completed", workerId)
 
 
-def networker(factory, _reactor, loggingQueue: multiprocessing.Queue):
+def networker(sharedManager, loggingQueue: multiprocessing.Queue):
+    factory = ChatRoomFactory(sharedManager, loggingQueue)
+    factory.motd = "Chat Room"
+    factory.logging = loggingQueue
+    logging.info("Starting networking worker")
     listener = ("0.0.0.0", 25565)
     try:
         factory.listen(*listener)
         log(loggingQueue, "Startup done! Listening on {0[0]}:{0[1]}".format(listener), "Networker")
-        _reactor.run()
+        reactor.run()
     except Exception as ex:
         log(loggingQueue, "Exception in networking thread! Restarting...", "Networker", type="exception", exception=ex)
         time.sleep(5)
-        networker(factory, _reactor, logging)
+        networker(sharedManager, logging)
 
 
 def main():
@@ -249,10 +252,12 @@ def main():
         p.start()
         logging.info("Started worker.")
         workers.append(p)
-    factory = ChatRoomFactory()
-    factory.motd = "Chat Room"
+    sharedManager = multiprocessing.Manager().dict()
+    sharedManager['players'] = []      # Time since the world was created in ticks
+    sharedManager['totalTime'] = 0     # Time of day in ticks
+    sharedManager['dayTime'] = 0        # Number of players online
     logging.info("Starting networking worker")
-    funcArgs = (factory, reactor, LOGGING_QUEUE)
+    funcArgs = (sharedManager, LOGGING_QUEUE)
     networkingProcess = multiprocessing.Process(target=networker, args=funcArgs)
     networkingProcess.start()
     logging.info("Started worker.")
@@ -265,9 +270,13 @@ def main():
             finishTickAt = startTickAt + 0.05 # add 50 milliseconds or one tick
             # TODO The next 4 lines are here only for TESTING, don't forget to remove these in the futur (and to move it to another place, like inside World.tick function)
             taskIds, tid = returnTaskId(taskIds)
-            send_task(addOne, [totalTime], {}, TASK_QUEUE, tid)
+            send_task(addOne, [sharedManager['totalTime']], {}, TASK_QUEUE, tid)
             taskIds, tid = returnTaskId(taskIds)
-            send_task(addOne, [dayTime], {}, TASK_QUEUE, tid)
+            send_task(addOne, [sharedManager['dayTime']], {}, TASK_QUEUE, tid)
+
+            sharedManager['totalTime'] += 1
+            sharedManager['dayTime'] += 1
+            sharedManager['dayTime'] %= 24000
             try:
                 # noinspection PyArgumentEqualDefault
                 # The goal here is to loop over each element in DONE_QUEUE
@@ -321,7 +330,7 @@ def main():
 if __name__ == '__main__':
     # Import all classes before importing the main method
     print("Importing classes, please wait ...")
-    #import classes
+    import classes
     print("Classes imported !")
 
     # TODO Use --debug flag
@@ -338,14 +347,13 @@ if __name__ == '__main__':
     else:
         BLACKFIRE_ENABLED = True
         probe.initialize()
-        #probe.enable()
+        probe.enable()
         logging.info("Enabled!")
 
     logging.info("Starting queues...")
     TASK_LIST = {}
     try:
-        TASK_QUEUE = multiprocessing.Queue(100)  # Allow the task queue to have up to 100 items in it at any
-        # given time
+        TASK_QUEUE = multiprocessing.Queue(100)  # Allow the task queue to have up to 100 items in it at any given time
     except ImportError:
         logging.fatal("No available shared semaphore implementation on the host system! See "
                     "https://bugs.python.org/issue3770 for more info.")  # click the bug link
@@ -357,9 +365,6 @@ if __name__ == '__main__':
     logging.info("Started queues!")
 
     # Fundamental MC constants
-    totalTime = 0  # Time since the world was created in ticks
-    dayTime = 0    # Time of day in ticks
-    players = []   # Number of players online
     main()
     if BLACKFIRE_ENABLED:
         probe.end()
