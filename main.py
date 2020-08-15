@@ -114,7 +114,25 @@ class ChatRoomProtocol(server.ServerProtocol):
         self.send_packet("plugin_message",
                          self.buff_type.pack_string("minecraft:brand"),
                          self.buff_type.pack_string("McPy/0.0.1-alpha"))  # TODO don't make this hardcoded
-
+        # Send server difficulty packet
+        self.send_packet("server_difficulty",
+                         self.buff_type.pack("B?",
+                                             0,  # difficulty = peaceful
+                                             True))  # difficulty locked
+        # Send player ability packet
+        self.send_packet("player_abilities",
+                         self.buff_type.pack("bff",
+                                             0x00,  # no flags set
+                                             0.05,  # default speed
+                                             0.1))  # default FOV
+        # TODO inbound Client settings packet
+        # Held item change packet
+        self.send_packet("held_item_change",
+                         self.buff_type.pack("b",
+                                             0x00))  # leftmost item
+        # TODO declare recipes (this should be automated, no sane person would handwrite that)
+        # TODO tags (maybe in combination with the recipes and declaring them in a datapack)
+        # TODO entity status (what is that?)
         # Send "Player Position and Look" packet
         self.send_packet("player_position_and_look",
                          self.buff_type.pack("dddff?",
