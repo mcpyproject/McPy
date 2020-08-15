@@ -56,7 +56,7 @@ players = []   # Number of players online
 def send_task(func, args: list, kwargs: dict, dataOut: multiprocessing.Queue, taskId: int) -> [int, None]:
     taskData = {'function': func, 'args': args, 'kwargs': kwargs}
 def getFavicon() -> str:
-    with open("favicon.png", "rb") as file:
+    with open("server-icon.png", "rb") as file:
         return base64.b64encode(file.read()).decode('utf-8')
 
 
