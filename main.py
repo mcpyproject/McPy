@@ -1,5 +1,7 @@
 # coding=utf-8
+import base64
 import gc
+import json
 import logging
 import multiprocessing
 import os
@@ -53,6 +55,11 @@ players = []   # Number of players online
 
 def send_task(func, args: list, kwargs: dict, dataOut: multiprocessing.Queue, taskId: int) -> [int, None]:
     taskData = {'function': func, 'args': args, 'kwargs': kwargs}
+def getFavicon() -> str:
+    with open("favicon.png", "rb") as file:
+        return base64.b64encode(file.read()).decode('utf-8')
+
+
     try:
         td = taskData
         td["id"] = taskId
@@ -91,6 +98,31 @@ def returnTaskId(taskIdList: list, taskId: int = None):
 # The next two classes are from https://quarry.readthedocs.io
 class ChatRoomProtocol(server.ServerProtocol):
     request_item_queue = REQUEST_QUEUE
+
+    def _responsePlayers(self):
+        players: int = min(5, len(self._players))  # set the amount of players to be displayed
+        response = []
+        for player in self._players[:players]:
+            response.append({"name": player[1], "id": str(player[0])})
+        return response
+
+    def packet_status_request(self, buff):
+        response: dict = {
+            "description": {
+                "text": self.factory.motd
+            },
+            "version": {
+                "name": "1.15.2",
+                "protocol": self.protocol_version
+            },
+            "players": {
+                "max": self.factory.max_players,
+                "online": len(self.factory.players),
+                "sample": self._responsePlayers()
+            },
+            "favicon": "data:image/png;base64," + getFavicon()
+        }
+        self.send_packet("status_response", self.buff_type.pack_string(json.dumps(response)))
 
     def player_joined(self):
         # Call super. This switches us to "play" mode, marks the player as
