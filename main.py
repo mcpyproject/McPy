@@ -98,6 +98,9 @@ class ChatRoomProtocol(server.ServerProtocol):
         self._players.append([self.uuid, self.display_name])
         #self.update_tablist()
 
+        # Send current time & day
+        self.send_day_time_update()
+
         # Announce player joined
         self.factory.send_chat(u"\u00a7e%s has joined." % self.display_name)
 
