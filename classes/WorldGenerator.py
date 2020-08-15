@@ -4,7 +4,7 @@ from random import randint
 
 from classes import BasicClasses
 from classes import TerrainFeatures
-from classes.materials import Material
+from classes.Blocks.materials import Material
 
 # Ore height ranges: the lower range will have a higher chance of being selected
 # generate coal ore between y=1 and y=128 at vein size between 5 and 16 blocks, at a 3 in 100 chance

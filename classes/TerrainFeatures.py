@@ -1,14 +1,16 @@
 """ The module descripes Terrain features, which are generators used to generate small structures """
 
-from classes import BasicClasses
-from classes.materials import Material
 from random import randint, choice
+
+from classes import BasicClasses
+from classes.Blocks.materials import Material
 
 
 def _generate_block_unsafely(chunk, chunkpos: [int, int, int], pos: [int, int, int], material: Material) -> bool:
     """Generated a block in a given chunk unsafely -> ignores any errors """
     try:
-        chunk.addNewBlock(chunkpos[0], chunkpos[1], chunkpos[2], BasicClasses.Block(pos[0], pos[1], pos[2], material, None))
+        chunk.addNewBlock(chunkpos[0], chunkpos[1], chunkpos[2],
+                          BasicClasses.Block(pos[0], pos[1], pos[2], material, None))
         return True
     except:
         return False

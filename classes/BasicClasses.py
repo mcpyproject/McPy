@@ -3,7 +3,7 @@
 import asyncio
 
 from classes import Exceptions
-from classes.materials import Material
+from classes.Blocks.materials import Material
 
 
 class Block:
