@@ -131,7 +131,7 @@ class ChatRoomProtocol(server.ServerProtocol):
         p_text = buff.unpack_string()
         chat_msg = "<{0}> {1}".format(self.display_name, p_text)
         self.factory.send_chat(chat_msg)
-        logging.info(chat_msg)
+        log(self.logging, chat_msg, "Chat")
 
     def send_day_time_update(self):
         self.send_packet("time_update", self.buff_type.pack(
