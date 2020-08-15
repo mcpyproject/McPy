@@ -9,8 +9,9 @@
 import json
 import logging
 import os
-import sys
 import subprocess
+import sys
+
 # Set default loggin to INFO
 logging.basicConfig(level="INFO")
 
@@ -63,8 +64,7 @@ if missing:
     subprocess.check_call(data)
 
 
-
-def getReleases():
+def getReleases() -> list:
     global releases
     try:
         if releases is not None:

@@ -1,4 +1,4 @@
-# Import blocks
+# Import directories
 from . import blocks
 
 # Import files

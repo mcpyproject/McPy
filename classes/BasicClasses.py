@@ -2,7 +2,7 @@
 # coding=utf-8
 import asyncio
 
-from . import Exceptions
+from .Exceptions import OutOfBoundsError
 from .blocks.Materials import Material
 
 
@@ -57,11 +57,11 @@ class Chunk:
 
     async def addNewBlock(self, x: int, y: int, z: int, block: Block) -> None:
         if x - 1 > self.size or z - 1 > self.size:
-            raise Exceptions.OutOfBoundsError(
+            raise OutOfBoundsError(
                 "New block location is out of the chunk at {0}, {1}: trying to place a block at {2},"
                 "{3} in a {4} block wide chunk!".format(self.xPos, self.zPos, x, z, self.size))
         elif y - 1 > self.height:
-            raise Exceptions.OutOfBoundsError("New block location is out of the chunk at {0}, {1}: trying to place a "
+            raise OutOfBoundsError("New block location is out of the chunk at {0}, {1}: trying to place a "
                                               "block at y={2} in a {3} block tall chunk!".format(self.xPos,
                                                                                                  self.zPos, y,
                                                                                                  self.height))

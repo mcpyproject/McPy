@@ -78,7 +78,29 @@ class ChatRoomProtocol(server.ServerProtocol):
                          self.buff_type.pack("??",
                                              False,  # reduced debug info
                                              True))  # show respawn screen
-
+        # Send Brand packet
+        self.send_packet("plugin_message",
+                         self.buff_type.pack_string("minecraft:brand"),
+                         self.buff_type.pack_string("McPy/0.0.1-alpha"))  # TODO don't make this hardcoded
+        # Send server difficulty packet
+        self.send_packet("server_difficulty",
+                         self.buff_type.pack("B?",
+                                             0,  # difficulty = peaceful
+                                             True))  # difficulty locked
+        # Send player ability packet
+        self.send_packet("player_abilities",
+                         self.buff_type.pack("bff",
+                                             0x00,  # no flags set
+                                             0.05,  # default speed
+                                             0.1))  # default FOV
+        # TODO inbound Client settings packet
+        # Held item change packet
+        self.send_packet("held_item_change",
+                         self.buff_type.pack("b",
+                                             0x00))  # leftmost item
+        # TODO declare recipes (this should be automated, no sane person would handwrite that)
+        # TODO tags (maybe in combination with the recipes and declaring them in a datapack)
+        # TODO entity status (what is that?)
         # Send "Player Position and Look" packet
         self.send_packet("player_position_and_look",
                          self.buff_type.pack("dddff?",
@@ -91,7 +113,6 @@ class ChatRoomProtocol(server.ServerProtocol):
                          self.buff_type.pack_varint(0))  # teleport id
 
         # Start sending "Keep Alive" packets
-        # TODO These 2 lines don't work
         self.ticker.add_loop(20, self.update_keep_alive)
         self.ticker.add_loop(100, self.send_day_time_update)
 
@@ -167,6 +188,9 @@ class ChatRoomFactory(server.ServerFactory):
         for player in self.players:
             player.send_packet("chat_message", player.buff_type.pack_chat(message) + player.buff_type.pack('B', 0))
 
+    def send_new_tablist(self, tablist):
+        for player in self.players:
+            player.send_packet("")
 
 def log(loggingQueue: multiprocessing.Queue, message, id, type = "info", exception=None):
     loggingQueue.put({
@@ -181,7 +205,7 @@ def worker(inQueue: multiprocessing.Queue, outQueue: multiprocessing.Queue, logg
     log(loggingQueue, "Worker started up.", workerId)
     while True:
         try:
-            item = inQueue.get()  # Waits for a new item to appear on the queue
+            item: [dict, str] = inQueue.get()  # Waits for a new item to appear on the queue
         except KeyboardInterrupt:
             outQueue.put(None)
             break
@@ -271,7 +295,7 @@ def main():
             taskIds = []
             startTickAt = time.time()
             finishTickAt = startTickAt + 0.05 # add 50 milliseconds or one tick
-            # TODO The next 4 lines are here only for TESTING, don't forget to remove these in the futur (and to move it to another place, like inside World.tick function)
+            # TODO The next 4 lines are here only for TESTING, don't forget to remove these in the futur
             taskIds, tid = returnTaskId(taskIds)
             send_task(addOne, [sharedManager['totalTime']], {}, TASK_QUEUE, tid)
             taskIds, tid = returnTaskId(taskIds)

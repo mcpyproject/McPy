@@ -2,8 +2,8 @@
 from math import floor, sqrt
 from random import randint
 
-from .BasicClasses import Block, Chunk
-from .TerrainFeatures import AbstractTerrainFeature, AbstractTreeGenerator, MatchstckTreeGenerator, OreFeature
+from .BasicClasses import Block, Chunk, Region
+from .TerrainFeatures import AbstractTerrainFeature, AbstractTreeGenerator, MatchstickTreeGenerator, OreFeature
 from .blocks.Materials import Material
 
 # Ore height ranges: the lower range will have a higher chance of being selected
@@ -17,12 +17,12 @@ DIAMOND_ORE = OreFeature(Material.DIAMOND_ORE, 3, 0, 16, 4, 8)
 
 # Trees
 BIRCH_TREE = AbstractTreeGenerator(Material.BIRCH_LOG, Material.BIRCH_LEAVES, 0.5, 5, 8)
-MATCHSTICK_TREE = MatchstckTreeGenerator(Material.SPRUCE_LOG, Material.SPRUCE_LEAVES, 0.3, 8, 12)
+MATCHSTICK_TREE = MatchstickTreeGenerator(Material.SPRUCE_LOG, Material.SPRUCE_LEAVES, 0.3, 8, 12)
 OAK_TREE = AbstractTreeGenerator(Material.OAK_LOG, Material.OAK_LEAVES, 1.5, 4, 8)
 
 # Holds stuff spawning naturally on world Generation - like trees or ores
-GENERATORS: [AbstractTerrainFeature] = [COAL_ORE, IRON_ORE, LAPIZ_ORE,
-           GOLD_ORE, REDSTONE_ORE, DIAMOND_ORE, OAK_TREE, BIRCH_TREE, MATCHSTICK_TREE]
+GENERATORS: [AbstractTerrainFeature] = [COAL_ORE, IRON_ORE, LAPIZ_ORE, GOLD_ORE, REDSTONE_ORE, DIAMOND_ORE, OAK_TREE,
+                                        BIRCH_TREE, MATCHSTICK_TREE]
 
 
 # Cave size settings
@@ -360,7 +360,7 @@ class WorldGenerator(SimplexNoise):
         await self._regenerate_chunk(x, y, z, region, positions, chunk)
         return chunk
 
-    async def _regenerate_chunk(self, x, y, z, region, positions, chunk):
+    async def _regenerate_chunk(self, x, y, z, region, positions, chunk: Chunk):
         for x, y, z in positions:
             if y < chunk.height*chunk.yPos:
                 continue
