@@ -1,7 +1,9 @@
 # coding=utf-8
 from math import floor, sqrt
+from random import randint
+
 from .BasicClasses import Block, Chunk, Region
-from .TerrainFeatures import *
+from .TerrainFeatures import AbstractTerrainFeature, AbstractTreeGenerator, MatchstickTreeGenerator, OreFeature
 from .materials import Material
 
 # Ore height ranges: the lower range will have a higher chance of being selected

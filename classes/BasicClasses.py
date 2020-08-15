@@ -2,7 +2,7 @@
 # coding=utf-8
 import asyncio
 
-from .Exceptions import *
+from .Exceptions import OutOfBoundsError
 from .materials import Material
 
 
