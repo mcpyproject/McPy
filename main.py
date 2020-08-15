@@ -110,6 +110,10 @@ class ChatRoomProtocol(server.ServerProtocol):
                          self.buff_type.pack("??",
                                              False,  # reduced debug info
                                              True))  # show respawn screen
+        # Send Brand packet
+        self.send_packet("plugin_message",
+                         self.buff_type.pack_string("minecraft:brand"),
+                         self.buff_type.pack_string("McPy/0.0.1-alpha"))  # TODO don't make this hardcoded
 
         # Send "Player Position and Look" packet
         self.send_packet("player_position_and_look",
