@@ -6,11 +6,12 @@
 # "downloadLink" = URL to the download of this server archive
 # "md5sum" = MD5 sum of the download
 # "sha1sum" = SHA1 sum of the download
-import os
-import sys
-import logging
 import json
+import logging
+import os
 import subprocess
+import sys
+
 try:
     import requests
 except ImportError:
@@ -46,7 +47,6 @@ missing = required - installed
 if missing:
     # implement pip as a subprocess:
     subprocess.check_call([sys.executable, '-m', 'pip', 'install', *missing])
-
 
 
 def getReleases() -> list:
