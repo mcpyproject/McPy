@@ -52,7 +52,7 @@ players = []   # Number of players online
 
 
 def send_task(func, args: list, kwargs: dict, dataOut: multiprocessing.Queue, taskId: int) -> [int, None]:
-    taskData = dict(function=func, args=args, kwargs=kwargs)
+    taskData = {'function': func, 'args': args, 'kwargs': kwargs}
     try:
         td = taskData
         td["id"] = taskId
@@ -190,12 +190,16 @@ class ChatRoomFactory(server.ServerFactory):
         for player in self.players:
             player.send_packet("chat_message", player.buff_type.pack_chat(message) + player.buff_type.pack('B', 0))
 
+    def send_new_tablist(self, tablist):
+        for player in self.players:
+            player.send_packet("")
+
 
 def worker(inQueue: multiprocessing.Queue, outQueue: multiprocessing.Queue, workerId: str):
     logging.info("Worker ID {0} has started up.".format(workerId))
     while True:
         try:
-            item = inQueue.get()  # Waits for a new item to appear on the queue
+            item: [dict, str] = inQueue.get()  # Waits for a new item to appear on the queue
         except KeyboardInterrupt:
             outQueue.put(None)
             break
