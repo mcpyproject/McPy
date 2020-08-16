@@ -3,7 +3,7 @@
 from enum import Enum, auto
 
 
-class Material (Enum):
+class Material(Enum):
     """ Represents a Material -
     Materials should be compared by entity, not by value"""
     

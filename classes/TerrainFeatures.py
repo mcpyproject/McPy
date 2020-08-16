@@ -1,7 +1,7 @@
 """ The module describes Terrain features, which are generators used to generate small structures """
 
 from .BasicClasses import Block, Chunk, Region
-from .materials import Material
+from .Blocks.materials import Material
 from random import randint, choice
 
 
