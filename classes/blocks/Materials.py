@@ -1,9 +1,9 @@
 # coding=utf-8
-"""Module holding all currently usable Materials as well utilities for them """
+"""Module holding all currently useable Materials as well utilities for them """
 from enum import Enum, auto
 
 
-class Material (Enum):
+class Material(Enum):
     """ Represents a Material -
     Materials should be compared by entity, not by value"""
     
