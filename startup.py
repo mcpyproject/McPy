@@ -42,15 +42,12 @@ parser.add_argument("--versions",         # Command line flag to print out list 
                     action="store_true",  # If this flag is defined, parsedArgs.versions will be True: else False
                     help="print out a list of all McPy versions")
 parser.add_argument("--debug",          # Command line flag to set logging in DEBUG mode
-                    default=False,    # Defaults to "false" if this flag is not passed
+                    action="store_false", # Syntactic sugar to say 'default:"false"'
                     help="set logging to DEBUG level")
 parsedArgs = parser.parse_args()
 
 if parsedArgs.debug:
-    if parsedArgs.debug == "False":
-        parsedArgs.debug = False
-    else:
-        logging.basicConfig(level="DEBUG")
+    logging.basicConfig(level="DEBUG")
 
 
 # Automagically installs all packages required
