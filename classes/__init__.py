@@ -1,5 +1,5 @@
 # Import directories
-from . import blocks
+from . import Blocks
 
 # Import files
 from . import BasicClasses

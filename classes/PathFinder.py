@@ -16,7 +16,7 @@ class MobPathFinding(AStarFinder):
                          diagonal_movement=diagonal_movement,
                          time_limit=time_limit,
                          max_runs=max_runs)
-
+    
     def find_path(self, start: tuple = None, end: tuple = None, grid=None):
         if not start or not end:
             raise TypeError("Need a start and end point!")
@@ -24,12 +24,12 @@ class MobPathFinding(AStarFinder):
             raise GridTooSmallError("No grid passed to pathfinder!")
         elif len(grid) < 1 or len(grid[0]) < 1:
             raise GridTooSmallError("Grid is too small!")
-
-        if type(grid) == type(["testlist"]):
+        
+        if isinstance(grid, list):
             grid = Grid(matrix=grid)
             start = grid.node(*start)
             end = grid.node(*end)
-
+        
         try:
             path = super().find_path(start, end, grid)
         except ExecutionTimeException:
