@@ -4,7 +4,7 @@ from random import randint
 
 from .BasicClasses import Block, Chunk, Region
 from .TerrainFeatures import AbstractTerrainFeature, AbstractTreeGenerator, MatchstickTreeGenerator, OreFeature
-from .materials import Material
+from .Blocks.Materials import Material
 
 # Ore height ranges: the lower range will have a higher chance of being selected
 # generate coal ore between y=1 and y=128 at vein size between 5 and 16 blocks, at a 3 in 100 chance
@@ -65,7 +65,7 @@ _F3 = 1.0 / 3.0
 _G3 = 1.0 / 6.0
 
 
-async def scaleNoise(noise: float, limit: tuple) -> float:
+def scaleNoise(noise: float, limit: tuple) -> float:
     upperLimit = int(limit[0])
     lowerLimit = int(limit[1])
     return (noise + 1) / 2 * (upperLimit - lowerLimit) + lowerLimit
@@ -354,7 +354,7 @@ class WorldGenerator(SimplexNoise):
             for blockZ in range(1, width):
                 bY = self.noise2(blockX, blockZ)  # Use 2D noise to generate the y coordinate, then use 3D noise to
                 # generate everything else
-                blockY = scaleNoise(bY, (63, 80)) # Scale the noise to be between min-max y value
+                blockY = scaleNoise(bY, (63, 80))  # Scale the noise to be between min-max y value
                 positions.append((blockX, blockY, blockZ))
         chunk = Chunk(x, y, z, [], region, width, height)
         await self._regenerate_chunk(x, y, z, region, positions, chunk)
@@ -374,6 +374,6 @@ class WorldGenerator(SimplexNoise):
             await chunk.addNewBlock(x, y, z, Block(x, y, z, Material.GRASS_BLOCK, {}))  # Generate grass at the top layer
             for height in range(1, y-6):  # Randomly add ores
                 for gen in GENERATORS:
-                    await gen.generation_attempt(region, scaleNoise(noise, (1, 100)) , chunk, x, height, z, False)
+                    gen.generation_attempt(region, scaleNoise(noise, (1, 100)), chunk, x, height, z, False)
             for gen in GENERATORS:
-                await gen.generation_attempt(region, scaleNoise(noise, (1, 100)), chunk, x, y + 1, z, True)
+                gen.generation_attempt(region, scaleNoise(noise, (1, 100)), chunk, x, y + 1, z, True)
