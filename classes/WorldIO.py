@@ -1,6 +1,6 @@
 """ API Class for accessing things in the World """
 from .BasicClasses import Block, Chunk, Region
-from .materials import Material
+from .Blocks.materials import Material
 
 
 class BasicBlockContainer:
@@ -27,13 +27,13 @@ def mergeContainers(destination: BasicBlockContainer,
         destination.container.append((item[0]+offsetX, item[1]+offsetY, item[2]+offsetZ, item[3]))
 
 
-def getChunk(chunkX : int, chunkY: int, chunkZ: int) -> Chunk:
+def getChunk(chunkX: int, chunkY: int, chunkZ: int) -> Chunk:
     """ Returns the Chunk  at a given position relative to origin in chunk sizes. A chunk is 16 blocks wide.
       It may raise a ChunkNotFound exception if the requested chunk does not exist."""
     pass
 
 
-def getRegion(regionX : int, regionY: int, regionZ: int) -> Region:
+def getRegion(regionX: int, regionY: int, regionZ: int) -> Region:
     """ Returns the Region at a given position relative to origin in region sizes.
     A region is 32 chunks large which are 512 blocks in total. """
     pass
@@ -49,7 +49,7 @@ def setMaterialAt(blockX: int, blockY: int, blockZ: int, newMaterial: Material):
     pass
 
 
-def formaliseChunk(chunkX : int, chunkY: int, chunkZ: int, changes: BasicBlockContainer):
+def formaliseChunk(chunkX: int, chunkY: int, chunkZ: int, changes: BasicBlockContainer):
     """ Applies changes stated in the given BasicBlockContainer to a chunk with a given position relative to origin
      in Chunk sizes. It may raise a ChunkNotFound exception if the chunk does not exist. """
     pass
