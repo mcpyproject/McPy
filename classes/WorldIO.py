@@ -1,6 +1,6 @@
 """ API Class for accessing things in the World """
 from .BasicClasses import Block, Chunk, Region
-from .Blocks.materials import Material
+from .blocks.materials import Material
 
 
 class BasicBlockContainer:

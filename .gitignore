@@ -1,3 +1,5 @@
+*.code-workspace
+*.pyc
 .vscode
 __pycache__
 McPy/

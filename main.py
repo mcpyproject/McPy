@@ -12,6 +12,7 @@ if sys.version_info < (3, 8):
     sys.exit(-2)
 
 # Import general libraries
+import argparse
 import gc
 import multiprocessing
 import os
@@ -415,16 +416,14 @@ def main():
     sys.exit(0)
 
 
-if __name__ == '__main__':
-    # Import all classes before importing the main method
-    print("Importing classes, please wait ...")
+def _launch_test():
+    import pytest
 
-    print("Classes imported !")
+    pytest.main(["-x", "test"])
+    pass
 
-    # TODO Use --debug flag
-    logging.basicConfig(format="[%(asctime)s - %(levelname)s - %(threadName)s] %(message)s", level=logging.DEBUG)
-    logging.root.setLevel(logging.NOTSET)
 
+def _launch_server():
     try:
         logging.info("Trying to initialize the Blackfire probe")
         # noinspection PyUnresolvedReferences
@@ -439,6 +438,8 @@ if __name__ == '__main__':
         logging.info("Enabled!")
 
     logging.info("Starting queues...")
+    # TODO Find a way to remove it
+    global TASK_LIST, TASK_QUEUE, DONE_QUEUE, REQUEST_QUEUE, LOGGING_QUEUE, LOGGING_INFO
     TASK_LIST = {}
     try:
         TASK_QUEUE = multiprocessing.Queue(100)  # Allow the task queue to have up to 100 items in it at any given time
@@ -446,9 +447,9 @@ if __name__ == '__main__':
         logging.fatal("No available shared semaphore implementation on the host system! See "
                       "https://bugs.python.org/issue3770 for more info.")  # click the bug link
         sys.exit(-1)
-    DONE_QUEUE = multiprocessing.Queue(1000)  # Allow the done queue to have up to 1,000 items in it at any given time
-    REQUEST_QUEUE = multiprocessing.Queue(1000)  # Queue for items that have a pending request to be executed
-    LOGGING_QUEUE = multiprocessing.Queue(1000)  # Queue for logging
+    DONE_QUEUE = multiprocessing.Queue(1000)                # Allow the done queue to have up to 1,000 items in it at any given time
+    REQUEST_QUEUE = multiprocessing.Queue(1000)             # Queue for items that have a pending request to be executed
+    LOGGING_QUEUE = multiprocessing.Queue(1000)             # Queue for logging
     LOGGING_INFO = {"threadName": "Main", "threadId": "0"}  # Currently unused
     logging.info("Started queues!")
 
@@ -456,5 +457,34 @@ if __name__ == '__main__':
     main()
     if BLACKFIRE_ENABLED:
         probe.end()
-else:
-    gc.enable()  # What's this else block doing here?
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--debug",              # Command line flag to set logging in DEBUG mode
+                        action="store_true",   # Syntactic sugar to say 'default:"false"'
+                        help="set logging to DEBUG level")
+    parser.add_argument("--test",               # Only launch tests
+                        action="store_true",   # Syntactic sugar to say 'default:"false"'
+                        help="Do not launch the server, only launch tests")
+
+    parsedArgs = parser.parse_args()
+    debug = parsedArgs.debug
+    test = parsedArgs.test
+
+    if debug:
+        print('Debug mode enabled. Don\'t forget to remove debug flag for maximum performance !')
+    logging_level = logging.DEBUG if debug else logging.INFO
+    logging.basicConfig(format="[%(asctime)s - %(levelname)s - %(threadName)s] %(message)s", level=logging_level)
+
+    # Import all classes before importing the main method
+    print("Importing classes, please wait ...")
+    import classes
+    print("Classes imported !")
+
+    # TODO What does this line do ?
+    logging.root.setLevel(logging.NOTSET)
+    if test:
+        _launch_test()
+    else:
+        _launch_server()

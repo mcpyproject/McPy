@@ -57,7 +57,7 @@ if parsedArgs.debug:
     logging.basicConfig(level="DEBUG")
 
 # Automagically installs all packages required
-required = {"quarry", "twisted", "cryptography", "requests"}
+required = {"quarry", "twisted", "cryptography", "requests", "pytest"}
 installed = {pkg.key for pkg in pkg_resources.working_set}
 missing = required - installed
 if missing:
