@@ -3,7 +3,8 @@
 
 
 class MinecraftException(Exception):
-    pass
+    def __init__(self, e=None):
+        self.exception = e
 
 
 class ServerException(MinecraftException):
@@ -39,4 +40,21 @@ class ChunkExistsError(ChunkError):
 
 
 class ClientException(MinecraftException):
+    pass
+
+
+class ConfigParserException(Exception):
+    def __init__(self, e=None):
+        self.exception = e
+
+
+class NotAFileError(ConfigParserException):
+    pass
+
+
+class UnsupportedConfigType(ConfigParserException):
+    pass
+
+
+class FormattingError(ConfigParserException):
     pass
