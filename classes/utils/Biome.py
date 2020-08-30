@@ -79,7 +79,7 @@ class Biome(Enum):
     END_MIDLANDS = (41, 'end_midlands')
     END_HIGHLANDS = (42, 'end_highlands')
     END_BARRENS = (43, 'end_barrens')
-    WARN_OCEAN = (44, 'warm_ocean')
+    WARM_OCEAN = (44, 'warm_ocean')
     LUKEWARM_OCEAN = (45, 'lukewarm_ocean')
     COLD_OCEAN = (46, 'cold_ocean')
     DEEP_WARM_OCEAN = (47, 'deep_warm_ocean')
