@@ -73,7 +73,7 @@ class Biome(Enum):
     BADLANDS = MESA
     MESA_PLATEAU_F = (38, 'wooded_badlands_plateau')
     WOODED_BADLANDS_PLATEAU = MESA_PLATEAU_F
-    MESA_PLATEAU = (39, 'MesaPlateau')
+    MESA_PLATEAU = (39, 'badlands_plateau')
     BADLANGS_PLATEAU = MESA_PLATEAU
     SMALL_END_ISLANDS = (40, 'small_end_islands')
     END_MIDLANDS = (41, 'end_midlands')
