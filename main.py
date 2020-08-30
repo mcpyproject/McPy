@@ -475,15 +475,14 @@ if __name__ == '__main__':
     if debug:
         print('Debug mode enabled. Don\'t forget to remove debug flag for maximum performance !')
     logging_level = logging.DEBUG if debug else logging.INFO
-    logging.basicConfig(format="[%(asctime)s - %(levelname)s - %(threadName)s] %(message)s", level=logging_level)
+    logging.basicConfig(format="[%(asctime)s - %(levelname)s - %(threadName)s] %(message)s")
+    logging.root.setLevel(logging_level)
 
     # Import all classes before importing the main method
     print("Importing classes, please wait ...")
     import classes
     print("Classes imported !")
 
-    # TODO What does this line do ?
-    logging.root.setLevel(logging.NOTSET)
     if test:
         _launch_test()
     else:
