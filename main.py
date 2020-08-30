@@ -483,6 +483,12 @@ if __name__ == '__main__':
     import classes
     print("Classes imported !")
 
+    print("Loading data files, please wait ...")
+    # TODO Import it in another class
+    from classes.datafile.Parser import Parser
+    Parser.parse_enums()
+    print("Data files loaded !")
+
     if test:
         _launch_test()
     else:

@@ -1,0 +1,28 @@
+{
+    "ids": {
+        "id1": {
+            "name": "Name 1",
+            "description": "Description 1"
+        },
+        "id2": {
+            "name": "Name 2",
+            "description": "Description 2"
+        },
+        "id3": {
+            "name": "Name 3",
+            "description": "Description 3"
+        },
+        "id4": {
+            "name": "Name 4",
+            "description": "Description 4"
+        },
+        "id5": {
+            "name": "Name 6",
+            "description": "Description 6"
+        },
+        "id6": {
+            "name": "Name 5",
+            "description": "Description 5"
+        }
+    }
+}
