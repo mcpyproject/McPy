@@ -3,12 +3,12 @@ from enum import Enum
 
 class Biome(Enum):
 
-    def __init__(self, string):
-        self.string = string
+    def __init__(self, namespace_id):
+        self.namespace_id = namespace_id
 
-    def name_to_biome(name):
+    def namespace_to_biome(id):
         for biome in Biome:
-            if biome.name == name:
+            if biome.namespace_id == id:
                 return biome
         return None
 

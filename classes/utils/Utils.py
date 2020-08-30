@@ -90,9 +90,13 @@ class ChatColor(Enum):
     def strip_color(input):
         return regex_color.sub('', input)
 
-    def translate_alternate_color(char, text):
-        # TODO
-        return text
+    def translate_alternate_color(alt_color, text):
+        list_text = list(text)
+        for i in range(len(list_text) - 1):
+            if text[i] == alt_color and '0123456789abcdefklmnorABCDEFKLMNOR'.find(text[i + 1]) > -1:
+                list_text[i] = ChatColor.key()
+                list_text[i + 1] = text[i + 1].lower()
+        return ''.join(list_text)
 
     BLACK = ('0', 0)
     DARK_BLUE = ('1', 1)
