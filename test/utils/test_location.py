@@ -79,6 +79,9 @@ class TestPosition:
         # Test for different worlds
         loc = Location(1, 1, 1, 'world')
         loc2 = Location(2, 3, 3, 'world_nether')
-        with pytest.raises(AssertionError) as excinfo:
+        with pytest.raises(ValueError) as excinfo:
             loc.distance(loc2)
+        assert "World must be the same" in str(excinfo.value)
+        with pytest.raises(ValueError) as excinfo:
+            loc.distance_squared(loc2)
         assert "World must be the same" in str(excinfo.value)
