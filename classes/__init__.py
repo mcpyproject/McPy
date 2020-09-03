@@ -1,5 +1,6 @@
 # Import directories
-from . import Blocks
+from . import blocks
+from . import utils
 
 # Import files
 from . import BasicClasses
