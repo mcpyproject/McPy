@@ -1,4 +1,4 @@
-from math import sqrt
+from math import sqrt, floor
 
 
 class Position:
@@ -13,9 +13,9 @@ class Position:
 
     def clone_rounded(self):
         clone = self.clone()
-        clone.x = int(clone.x) - (1 if clone.x < 0 else 0)
-        clone.y = int(clone.y) - (1 if clone.y < 0 else 0)
-        clone.z = int(clone.z) - (1 if clone.z < 0 else 0)
+        clone.x = floor(clone.x)
+        clone.y = floor(clone.y)
+        clone.z = floor(clone.z)
         return clone
 
     def distance_squared(self, pos):
