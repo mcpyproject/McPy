@@ -15,6 +15,7 @@ class Version(Enum):
     def is_same_major(self, other_version):
         return self.major == other_version.major
 
+    @staticmethod
     def get_version(protocol):
         for v in Version:
             if v.protocol == protocol:
@@ -84,12 +85,15 @@ class ChatColor(Enum):
         self.key = key
         self.id = id
 
+    @staticmethod
     def key():
         return '§'
 
+    @staticmethod
     def strip_color(input):
         return regex_color.sub('', input)
 
+    @staticmethod
     def translate_alternate_color(alt_color, text):
         list_text = list(text)
         for i in range(len(list_text) - 1):
