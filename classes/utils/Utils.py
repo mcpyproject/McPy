@@ -2,6 +2,8 @@ import re
 
 from enum import Enum, IntEnum
 
+from classes.datafile.Parser import Parser
+
 
 class Version(Enum):
 
@@ -130,6 +132,20 @@ class Dimension(Enum):
     THE_END = 1
 
 
+@Parser.Parser(
+    file='registries.json',
+    directory='data/minecraft/{version}/reports',
+    struct={
+        'protocol_id': {
+            '_action': {
+                'type': 'save',
+                'id': 'protocol_id',
+            },
+        },
+    },
+    array_path='minecraft:mob_effect/entries',
+    key_pattern='minecraft:{key}',
+)
 class Effect(Enum):
     """ Effects, ordered by name """
 
@@ -170,6 +186,20 @@ class Effect(Enum):
     WITHER = ('wither')
 
 
+@Parser.Parser(
+    file='registries.json',
+    directory='data/minecraft/{version}/reports',
+    struct={
+        'protocol_id': {
+            '_action': {
+                'type': 'save',
+                'id': 'protocol_id',
+            },
+        },
+    },
+    array_path='minecraft:enchantment/entries',
+    key_pattern='minecraft:{key}',
+)
 class Enchantment(Enum):
 
     def __init__(self, namespace_id):
@@ -214,6 +244,20 @@ class Enchantment(Enum):
     VANISHING_CURSE = ('vanishing_curse')
 
 
+@Parser.Parser(
+    file='registries.json',
+    directory='data/minecraft/{version}/reports',
+    struct={
+        'protocol_id': {
+            '_action': {
+                'type': 'save',
+                'id': 'protocol_id',
+            },
+        },
+    },
+    array_path='minecraft:entity_type/entries',
+    key_pattern='minecraft:{key}',
+)
 class Entity(Enum):
     """ Entities, ordered by name """
 
