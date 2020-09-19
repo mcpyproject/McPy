@@ -99,7 +99,7 @@ class Parser():
     def parse_enums():
         for to_parse in Parser.to_parse:
             before_time = int(time.time() * 1000)
-            print('Loading file %s' % (to_parse['_file']))
+            print('Loading file %s for class %s' % (to_parse['_file'], to_parse['_cls'].__name__))
             # Retrieves namespace id in enum
             namespace_ids = Parser._retrieve_namespace_id(to_parse['_cls'], to_parse['_namespace_id'])
 
@@ -174,7 +174,11 @@ class Parser():
                 # Go in depth until we're at array_path
                 for p in Parser.slash_pattern.split(array_path):
                     if p:
-                        data = data[p]
+                        if p in data:
+                            data = data[p]
+                        else:
+                            print('Cannot go into path %s in file %s !' % (array_path, file))
+                            return
                 # Once we're where array_path want to be, we'll loop over each element in our enum
                 for id in namespace_ids:
                     id_key = key_pattern.replace('{key}', id)
