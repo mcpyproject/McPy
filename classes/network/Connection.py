@@ -93,6 +93,16 @@ class PlayerNetwork(server.ServerProtocol):
             'flags': 0,
             'entity_id': self.entity_id,
         })
+        # Send a chunk
+        self.make_packet_and_send(PacketType.CHUNK_DATA, {
+            'x': 0,
+            'z': 0,
+            'full': True,
+            'heightmap': None,
+            'sections': None,
+            'biomes': None,
+            'block_entities': None,
+        })
         # Start looper
         self.ticker.add_loop(20, self._update_keep_alive)
         # Notify server

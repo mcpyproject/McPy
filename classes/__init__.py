@@ -2,6 +2,7 @@
 from . import blocks
 from . import network
 from . import utils
+from . import world
 
 # Import files
 from . import BasicClasses

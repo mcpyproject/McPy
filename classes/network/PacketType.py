@@ -15,6 +15,7 @@ class PacketType(enum.Enum):
     KEEP_ALIVE = ('keep_alive', [])
     TIME_UPDATE = ('time_update', ['game_time', 'day_time'])
     CHAT_MESSAGE = ('chat_message', ['message'])
+    CHUNK_DATA = ('chunk_data', ['x', 'z', 'full', 'heightmap', 'sections', 'biomes', 'block_entities'])
 
 
 class BasicNetwork:
@@ -49,4 +50,8 @@ class BasicNetwork:
 
     @staticmethod
     def chat_message(buff_type, message=None):
+        raise NotImplementedError()
+
+    @staticmethod
+    def chunk_data(buff_type, x=0, z=0, full=False, heightmap=None, sections=None, biomes=None, block_entities=None):
         raise NotImplementedError()

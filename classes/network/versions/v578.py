@@ -55,3 +55,17 @@ class v1_15_2(BasicNetwork):
         return [
             buff_type.pack_chat(message) + buff_type.pack('B', 0)
         ]
+
+    @staticmethod
+    def chunk_data(buff_type, x=0, z=0, full=False, heightmap=None, sections=None, biomes=None, block_entities=None):
+        sections_data = buff_type.pack_chunk(sections)
+        return [
+            buff_type.pack('ii?', x, z, full),
+            buff_type.pack_chunk_bitmask(sections),
+            buff_type.pack_nbt(heightmap),
+            buff_type.pack_array('I', biomes) if full else b'',
+            buff_type.pack_varint(len(sections_data)),
+            sections_data,
+            buff_type.pack_varint(len(block_entities)),
+            b''.join(buff_type.pack_nbt(entity) for entity in block_entities)
+        ]
