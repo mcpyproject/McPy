@@ -1,70 +1,96 @@
+from random import randint
+from math import fmod, fsum
 from classes.utils.Position import Position
 
 
 class TestPosition:
 
     def test_position(self):
-        pos = Position(1, 4, 5)
-        assert pos.x == 1, 'x should be 1'
-        assert pos.y == 4, 'y should be 4'
-        assert pos.z == 5, 'z should be 5'
+        for x in range(-20, 20):
+            for z in range(-20, 20):
+                for y in range(-20, 20):
+                    pos = Position(x, y, z)
+                    assert pos.x == x, 'x should be {0}, instead it\'s {1}'.format(x, pos.x)
+                    assert pos.y == y, 'y should be {0}, instead it\'s {1}'.format(y, pos.y)
+                    assert pos.z == z, 'z should be {0}, instead it\'s {1}'.format(z, pos.z)
 
     def test_clone(self):
-        pos = Position(1, 4, 5)
-        clone = pos.clone()
-        assert pos == clone, 'clone should be the same as the original'
-        assert pos.x == clone.x, 'x should be the same'
-        assert pos.y == clone.y, 'y should be the same'
-        assert pos.z == clone.z, 'z should be the same'
-
-        # Clone negative numbers
-        pos = Position(-1, -4, -5)
-        clone = pos.clone()
-        assert pos == clone, 'clone should be the same as the original'
-        assert pos.x == clone.x, 'x should be the same'
-        assert pos.y == clone.y, 'y should be the same'
-        assert pos.z == clone.z, 'z should be the same'
+        for x in range(-20, 20):
+            for z in range(-20, 20):
+                for y in range(-20, 20):
+                    pos = Position(x, y, z)
+                    clone = pos.clone()
+                    assert pos == clone, 'clone should be the same as the original'
+                    assert pos.x == clone.x, 'x should be the same. Instead x is {0} for the original' \
+                                             ' and {1} for the clone'.format(pos.x, clone.x)
+                    assert pos.y == clone.y, 'y should be the same. Instead y is {0} for the original' \
+                                             ' and {1} for the clone'.format(pos.y, clone.y)
+                    assert pos.z == clone.z, 'z should be the same. Instead z is {0} for the original' \
+                                             ' and {1} for the clone'.format(pos.z, clone.z)
 
     def test_clone_rounded(self):
-        pos = Position(1.1, 4.5, 5.9)
-        block = pos.clone_rounded()
-        assert pos != block, 'Positions should be different'
-        assert block.x == 1, 'x should be 1'
-        assert block.y == 4, 'y should be 4'
-        assert block.z == 5, 'z should be 5'
+        for x in range(-20, 20):
+            for z in range(-20, 20):
+                for y in range(-20, 20):
+                    offset_x = randint(-10, 10) / 10
+                    offset_y = randint(-10, 10) / 10
+                    offset_z = randint(-10, 10) / 10
+                    pos = Position(fsum((x, offset_x)), fsum((y, offset_y)), fsum((z, offset_z)))
+                    block = pos.clone_rounded()
 
-        # Check for negatives number
-        pos = Position(-1.1, -4.5, -5.9)
-        block = pos.clone_rounded()
-        assert pos != block, 'Positions should be different'
-        assert block.x == -2, 'x should be -2'
-        assert block.y == -5, 'y should be -5'
-        assert block.z == -6, 'z should be -6'
+                    assert block.x <= pos.x, 'Unexpected value X, got {0} for clone and {1} for original.' \
+                                             ' Clone should be smaller the original'.format(block.x, pos.x)
+                    assert block.y <= pos.y, 'Unexpected value Y, got {0} for clone and {1} for original.' \
+                                             ' Clone should be smaller the original'.format(block.y, pos.y)
+                    assert block.z <= pos.z, 'Unexpected value Z, got {0} for clone and {1} for original.' \
+                                             ' Clone should be smaller the original'.format(block.z, pos.z)
+                    assert fmod(block.x, 1) == 0, 'Expected x to be round, instead got an offset of {}' \
+                        .format(fmod(block.x, 1))
+                    assert fmod(block.y, 1) == 0, 'Expected y to be round, instead got an offset of {}' \
+                        .format(fmod(block.y, 1))
+                    assert fmod(block.z, 1) == 0, 'Expected z to be round, instead got an offset of {}' \
+                        .format(fmod(block.z, 1))
 
-        # Check for negatives & positives number
-        pos = Position(-1.1, 4.5, -5.9)
-        block = pos.clone_rounded()
-        assert pos != block, 'Positions should be different'
-        assert block.x == -2, 'x should be -2'
-        assert block.y == 4, 'y should be 4'
-        assert block.z == -6, 'z should be -6'
+    @staticmethod
+    def _get_random_position(lower: int, upper: int, granularity: int) -> Position:
+        return Position(fsum((randint(lower, upper), randint(-granularity, granularity) / granularity)),
+                        fsum((randint(lower, upper), randint(-granularity, granularity) / granularity)),
+                        fsum((randint(lower, upper), randint(-granularity, granularity) / granularity)))
 
     def test_distance(self):
-        pos = Position(1, 1, 1)
-        pos2 = Position(2, 3, 3)
-        assert pos.distance_squared(pos2) == 9, 'Squared distance between (1, 1, 1) and (2, 3, 3) should be 9'
-        assert pos.distance(pos2) == 3, 'Distance between (1, 1, 1) and (2, 3, 3) should be 3'
-        assert pos.distance(pos2) == pos2.distance(pos), 'Distance must be the same'
-
-        pos = Position(1, 3, 1)
-        pos2 = Position(2, 1, 3)
-        assert pos.distance(pos2) == 3, 'Distance between (1, 3, 1) and (2, 1, 3) should be 3'
-
-        pos = Position(10, 10, 10)
-        pos2 = Position(10, 10, 10)
-        assert pos.distance(pos2) == 0, 'Distance at same point should be 0'
-
-        pos = Position(-1, -1, -1)
-        pos2 = Position(1, 2, 4)
-        dist = pos.distance(pos2)
-        assert dist > 6.1644 and dist < 6.1645, 'Distance between (-1, -1, -1) and (1, 2, 4) should be about 6.164414'
+        for x in range(-20, 20):
+            for z in range(-20, 20):
+                for y in range(-20, 20):
+                    offset_x = randint(-10, 10) / 10
+                    offset_y = randint(-10, 10) / 10
+                    offset_z = randint(-10, 10) / 10
+                    pos = Position(fsum((x, offset_x)), fsum((y, offset_y)), fsum((z, offset_z)))
+                    comparator: Position = self._get_random_position(-20, 20, 10)
+                    assert pos.distance_squared(comparator) >= 0, 'Distance to two locations may not be under than 0,' \
+                                                                  'yet its {0}'.format(pos.distance_squared(comparator))
+                    assert (abs(pos.distance(comparator)*pos.distance(comparator) - pos.distance_squared(comparator))
+                            < 1), 'The difference between Distance * Distance and distance_squared is too high; ' \
+                                  'Distance is {0} and distance_squared is {1}'.format(pos.distance(comparator),
+                                                                                       pos.distance_squared(comparator))
+                    if pos.distance_squared(comparator) > 1:
+                        assert pos.distance_squared(comparator) > pos.distance(comparator), 'Distance squared should ' \
+                                                                                            'be higher than distance ' \
+                                                                                            '{0}, squared is {1}' \
+                            .format(pos.distance(comparator), pos.distance_squared(comparator))
+                    else:
+                        assert pos.distance_squared(comparator) <= pos.distance(comparator), 'Distance squared should' \
+                                                                                             ' be lower than distance '\
+                                                                                             '{0}, squared is {1}' \
+                            .format(pos.distance(comparator), pos.distance_squared(comparator))
+                    offset_x = randint(-1000, 1000) / 10
+                    comparator = Position(pos.x + offset_x, pos.y, pos.z)
+                    assert abs(pos.distance(comparator)-abs(offset_x)) < 0.0000000001, \
+                        'Unexpected distance, expected {0}, got {1}'.format(abs(offset_x), pos.distance(comparator))
+                    offset_y = randint(-1000, 1000) / 10
+                    comparator = Position(pos.x, pos.y + offset_y, pos.z)
+                    assert abs(pos.distance(comparator)-abs(offset_y)) < 0.0000000001, \
+                        'Unexpected distance, expected {0}, got {1}'.format(abs(offset_y), pos.distance(comparator))
+                    offset_z = randint(-1000, 1000) / 10
+                    comparator = Position(pos.x, pos.y, pos.z + offset_z)
+                    assert abs(pos.distance(comparator)-abs(offset_z)) < 0.0000000001, \
+                        'Unexpected distance, expected {0}, got {1}'.format(abs(offset_z), pos.distance(comparator))
