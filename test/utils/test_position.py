@@ -1,5 +1,6 @@
-from random import randint
 from math import fmod, fsum
+from random import randint
+
 from classes.utils.Position import Position
 
 
@@ -37,7 +38,6 @@ class TestPosition:
                     offset_z = randint(-10, 10) / 10
                     pos = Position(fsum((x, offset_x)), fsum((y, offset_y)), fsum((z, offset_z)))
                     block = pos.clone_rounded()
-
                     assert block.x <= pos.x, 'Unexpected value X, got {0} for clone and {1} for original.' \
                                              ' Clone should be smaller the original'.format(block.x, pos.x)
                     assert block.y <= pos.y, 'Unexpected value Y, got {0} for clone and {1} for original.' \

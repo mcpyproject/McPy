@@ -1,7 +1,9 @@
-import pytest
+from pytest import raises
+
+from math import fmod, fsum
 from random import choices, randint
 from string import ascii_letters, digits, whitespace
-from math import fmod, fsum
+
 from classes.utils.Location import Location
 
 
@@ -44,7 +46,6 @@ class TestPosition:
                     offset_z = randint(-10, 10) / 10
                     loc = Location(fsum((x, offset_x)), fsum((y, offset_y)), fsum((z, offset_z)), world)
                     clone = loc.clone_rounded()
-
                     assert clone.x <= loc.x, 'Unexpected value X, got {0} for clone and {1} for original.' \
                                              ' Clone should be smaller the original'.format(clone.x, loc.x)
                     assert clone.y <= loc.y, 'Unexpected value Y, got {0} for clone and {1} for original.' \
@@ -108,9 +109,9 @@ class TestPosition:
         # Test for different worlds
         loc = Location(1, 1, 1, 'world')
         loc2 = Location(2, 3, 3, 'world_nether')
-        with pytest.raises(ValueError) as excinfo:
+        with raises(ValueError) as excinfo:
             loc.distance(loc2)
         assert "World must be the same" in str(excinfo.value)
-        with pytest.raises(ValueError) as excinfo:
+        with raises(ValueError) as excinfo:
             loc.distance_squared(loc2)
         assert "World must be the same" in str(excinfo.value)
