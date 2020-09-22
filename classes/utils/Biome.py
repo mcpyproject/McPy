@@ -6,6 +6,7 @@ class Biome(Enum):
     def __init__(self, namespace_id):
         self.namespace_id = namespace_id
 
+    @staticmethod
     def namespace_to_biome(id):
         for biome in Biome:
             if biome.namespace_id == id:
