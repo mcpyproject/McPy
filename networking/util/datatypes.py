@@ -45,7 +45,6 @@ class VarInt:
         while (byte & 0x80) != 0:
             if n_bytes > 4:
                 raise OverflowError("VarInt too large")
-            n_bytes += 1
             if isinstance(sock, bytes):
                 byte = sock[0]
                 sock = sock[1:]
@@ -53,6 +52,7 @@ class VarInt:
                 byte = ord(sock.recv(1))
             value = byte & 0x7f
             number |= value << (7 * n_bytes)  # In-place bitwise OR operation
+            n_bytes += 1
         if number > 2**31-1:
             number -= 2**32
         if isinstance(sock, bytes):
@@ -101,7 +101,6 @@ class VarLong:
         while (byte & 0x80) != 0:
             if n_bytes > 9:
                 raise OverflowError("VarLong too large")
-            n_bytes += 1
             if isinstance(sock, bytes):
                 byte = sock[0]
                 sock = sock[1:]
@@ -109,6 +108,7 @@ class VarLong:
                 byte = ord(sock.recv(1))
             value = byte & 0x7f
             number |= value << (7 * n_bytes)  # In-place bitwise OR operation
+            n_bytes += 1
         if number > 2**63-1:
             number -= 2**64
         if isinstance(sock, bytes):
@@ -125,7 +125,6 @@ class VarLong:
         :raises struct.error: The provided number is outside the bounds for this type.
         :return: The encoded VarLong.
         """
-        print()
         number = struct.unpack(">Q", struct.pack(">q", number))[0]
         out = b""
         while True:
@@ -329,7 +328,7 @@ class StructType:
     size = None
 
 
-class Boolean(StructType, bool):
+class Boolean(StructType):
     code = "?"
     size = 1
 

@@ -1,4 +1,5 @@
-quarry
-twisted
 cryptography
+pytest
+quarry
 requests
+twisted

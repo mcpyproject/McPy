@@ -47,7 +47,7 @@ class Packet:
                 if isinstance(item.type, StructType):
                     out += struct.pack(">" + item.type.code, value)
                     continue
-                if isinstance(item.type, bool):
+                if isinstance(item.type, Boolean):
                     out += b"\x01" if value else b"\x00"
                     continue
                 if isinstance(item.type, VarInt):
