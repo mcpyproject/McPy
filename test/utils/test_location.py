@@ -46,12 +46,31 @@ class TestPosition:
                     offset_z = randint(-10, 10) / 10
                     loc = Location(fsum((x, offset_x)), fsum((y, offset_y)), fsum((z, offset_z)), world)
                     clone = loc.clone_rounded()
+                    # TODO as soon as Position.py changes, test it with a `x = a + 0.5 | (a % 1 = 1)` instead
+                    # TODO as soon as Position.py changes, test it with a `z = a + 0.5 | (a % 1 = 1)` instead
                     assert clone.x <= loc.x, 'Unexpected value X, got {0} for clone and {1} for original.' \
                                              ' Clone should be smaller the original'.format(clone.x, loc.x)
                     assert clone.y <= loc.y, 'Unexpected value Y, got {0} for clone and {1} for original.' \
                                              ' Clone should be smaller the original'.format(clone.y, loc.y)
                     assert clone.z <= loc.z, 'Unexpected value Z, got {0} for clone and {1} for original.' \
                                              ' Clone should be smaller the original'.format(clone.z, loc.z)
+                    assert loc.world == clone.world, 'World should be the same. Instead it is {0} for the original' \
+                                                     ' and {1} for the clone'.format(loc.world, clone.world)
+                    assert fmod(clone.x, 1) == 0, 'Expected x to be round, instead got an offset of {}' \
+                        .format(fmod(clone.x, 1))
+                    assert fmod(clone.y, 1) == 0, 'Expected y to be round, instead got an offset of {}' \
+                        .format(fmod(clone.y, 1))
+                    assert fmod(clone.z, 1) == 0, 'Expected z to be round, instead got an offset of {}' \
+                        .format(fmod(clone.z, 1))
+                    # Test already round rounded Locations
+                    loc = Location(x, y, z, world)
+                    clone = loc.clone_rounded()
+                    assert clone.x == loc.x, 'Unexpected value X, got {0} for clone and {1} for original.' \
+                                             ' Clone should be equal to the original'.format(clone.x, loc.x)
+                    assert clone.y == loc.y, 'Unexpected value Y, got {0} for clone and {1} for original.' \
+                                             ' Clone should be equal to the original'.format(clone.y, loc.y)
+                    assert clone.z == loc.z, 'Unexpected value Z, got {0} for clone and {1} for original.' \
+                                             ' Clone should be equal to the original'.format(clone.z, loc.z)
                     assert loc.world == clone.world, 'World should be the same. Instead it is {0} for the original' \
                                                      ' and {1} for the clone'.format(loc.world, clone.world)
                     assert fmod(clone.x, 1) == 0, 'Expected x to be round, instead got an offset of {}' \

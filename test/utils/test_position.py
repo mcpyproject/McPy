@@ -38,6 +38,8 @@ class TestPosition:
                     offset_z = randint(-10, 10) / 10
                     pos = Position(fsum((x, offset_x)), fsum((y, offset_y)), fsum((z, offset_z)))
                     block = pos.clone_rounded()
+                    # TODO as soon as Position.py changes, test it with a `x = a + 0.5 | (a % 1 = 1)` instead
+                    # TODO as soon as Position.py changes, test it with a `z = a + 0.5 | (a % 1 = 1)` instead
                     assert block.x <= pos.x, 'Unexpected value X, got {0} for clone and {1} for original.' \
                                              ' Clone should be smaller the original'.format(block.x, pos.x)
                     assert block.y <= pos.y, 'Unexpected value Y, got {0} for clone and {1} for original.' \
@@ -50,6 +52,21 @@ class TestPosition:
                         .format(fmod(block.y, 1))
                     assert fmod(block.z, 1) == 0, 'Expected z to be round, instead got an offset of {}' \
                         .format(fmod(block.z, 1))
+                    # Test already round rounded Positions
+                    pos = Position(x, y, z)
+                    clone = pos.clone_rounded()
+                    assert clone.x == pos.x, 'Unexpected value X, got {0} for clone and {1} for original.' \
+                                             ' Clone should be equal to the original'.format(clone.x, pos.x)
+                    assert clone.y == pos.y, 'Unexpected value Y, got {0} for clone and {1} for original.' \
+                                             ' Clone should be equal to the original'.format(clone.y, pos.y)
+                    assert clone.z == pos.z, 'Unexpected value Z, got {0} for clone and {1} for original.' \
+                                             ' Clone should be equal to the original'.format(clone.z, pos.z)
+                    assert fmod(clone.x, 1) == 0, 'Expected x to be round, instead got an offset of {}' \
+                        .format(fmod(clone.x, 1))
+                    assert fmod(clone.y, 1) == 0, 'Expected y to be round, instead got an offset of {}' \
+                        .format(fmod(clone.y, 1))
+                    assert fmod(clone.z, 1) == 0, 'Expected z to be round, instead got an offset of {}' \
+                        .format(fmod(clone.z, 1))
 
     @staticmethod
     def _get_random_position(lower: int, upper: int, granularity: int) -> Position:
