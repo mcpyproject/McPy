@@ -123,7 +123,7 @@ class ChatRoomProtocol(server.ServerProtocol):
         self.send_day_time_update()
 
         # Announce player joined
-        self.factory.send_chat(u"\u00a7e%s has joined." % self.display_name)
+        self.factory.send_chat(u"\u00a7e%s joined the game" % self.display_name)
 
     def player_left(self):
         super(ChatRoomProtocol, self).player_left()
@@ -131,7 +131,7 @@ class ChatRoomProtocol(server.ServerProtocol):
         self._players.remove([self.uuid, self.display_name])
         #self.update_tablist()
         # Announce player left
-        self.factory.send_chat(u"\u00a7e%s has left." % self.display_name)
+        self.factory.send_chat(u"\u00a7e%s left the game" % self.display_name)
 
     def update_keep_alive(self):
         # Send a "Keep Alive" packet
