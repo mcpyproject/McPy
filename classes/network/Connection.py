@@ -200,10 +200,6 @@ class ServerFactory(server.ServerFactory):
         ServerThreadController.send_packet(packet_type=PacketType.CHAT_MESSAGE,
                                            message=u"\u00a7e%s left the game" % player.display_name)
 
-    # -------------------------------------------------------------
-    #                           Public method
-    # -------------------------------------------------------------
-
     def send_packet(self, packet_type: PacketType, **data):
         for entity_id in self._players:
             self.send_packet_player(entity_id, packet_type, **data)
@@ -285,10 +281,6 @@ class ServerThreadController:
             except:
                 # TODO Catch this exception
                 pass
-
-    # -------------------------------------------------------------
-    #                           Public method
-    # -------------------------------------------------------------
 
     @staticmethod
     def send_packet(packet_type: PacketType, **data):
