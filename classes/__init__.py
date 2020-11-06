@@ -1,5 +1,6 @@
 # Import directories
 from . import blocks
+from . import network
 from . import utils
 
 # Import files
