@@ -1,4 +1,5 @@
 import multiprocessing
+import json
 
 from multiprocessing.queues import Empty
 
@@ -15,6 +16,11 @@ from .versions.v578 import v1_15_2
 entity_id = 1
 QUEUE_SIZE = 100000
 
+with open('releases.json', 'r') as f:
+    release_info = json.load(f)
+
+for releases in release_info:
+    brand = (releases['mcpyBrand'])
 
 class PlayerNetwork(server.ServerProtocol):
 
@@ -70,7 +76,7 @@ class PlayerNetwork(server.ServerProtocol):
         # Send 'brand' packet
         self.make_packet_and_send(PacketType.PLUGIN_MESSAGE, {
             'channel': 'minecraft:brand',
-            'data': 'McPy/0.0.1-alpha',  # TODO Edit that
+            'data': brand,  # TODO Edit that
         })
         # Send 'difficulty' packet
         self.make_packet_and_send(PacketType.SERVER_DIFFICULTY, {

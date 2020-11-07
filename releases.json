@@ -3,6 +3,7 @@
     "mcpyVersion": "v0.0.0-alpha",
     "mcpyVendor": "The McPy team",
     "minecraftVersion": "1.15.2",
+    "mcpyBrand": "McPy/v0.0.0-alpha",
     "releaseDate": "09 August 2020",
     "downloadLink": "https://github.com/tazz4843/McPy/releases/download/v0.0.0-alpha/v0.0.0-alpha.zip",
     "md5sum": "e37b82ed03819c9d46e9fd7f6e90d0dd",
