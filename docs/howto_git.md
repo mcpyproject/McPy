@@ -15,8 +15,5 @@
 
 ## Pull Request
 - Use minimal commit ! Squash & rebase your changes whenever you edit your PR before submitting ! Don't do like [this](https://github.com/tazz4843/McPy/pull/20) guy !
-- We use some pefixed tags in our PR:
-  - [FIX]: When your PR fix a bug
-  - [ADD]: When your PR add a new feature
-  - [IMP]: When your PR improve something that exists
+- GitHub labels are used to organize PRs, so please avoid tags like `[FIX]` or `[IMP]` in the title. (Commits are fine.)
 - More informations about Squash & rebase [here](https://www.internalpointers.com/post/squash-commits-into-one-git), [here](https://www.devroom.io/2011/07/05/git-squash-your-latests-commits-into-one/) or [here (french)](https://www.ekino.com/articles/comment-squasher-efficacement-ses-commits-avec-git)
