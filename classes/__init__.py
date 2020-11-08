@@ -1,3 +1,5 @@
+# Import datafile first
+from . import datafile
 # Import directories
 from . import blocks
 from . import network

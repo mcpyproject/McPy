@@ -2,6 +2,8 @@ import re
 
 from enum import Enum, IntEnum
 
+from classes.datafile.Parser import Parser
+
 
 class Version(Enum):
 
@@ -66,6 +68,7 @@ class Version(Enum):
     v1_16_0 = (1, 16, 0, 735)
     v1_16_1 = (1, 16, 1, 736)
     v1_16_2 = (1, 16, 2, 751)
+    v1_16_3 = (1, 16, 3, 753)
 
 
 class GameMode(IntEnum):
@@ -133,6 +136,20 @@ class Dimension(Enum):
     THE_END = 1
 
 
+@Parser.Parser(
+    file='registries.json',
+    directory='data/minecraft/{version}/reports',
+    struct={
+        'protocol_id': {
+            '_action': {
+                'type': 'save',
+                'id': 'protocol_id',
+            },
+        },
+    },
+    array_path='minecraft:mob_effect/entries',
+    key_pattern='minecraft:{key}',
+)
 class Effect(Enum):
     """ Effects, ordered by name """
 
@@ -173,6 +190,20 @@ class Effect(Enum):
     WITHER = ('wither')
 
 
+@Parser.Parser(
+    file='registries.json',
+    directory='data/minecraft/{version}/reports',
+    struct={
+        'protocol_id': {
+            '_action': {
+                'type': 'save',
+                'id': 'protocol_id',
+            },
+        },
+    },
+    array_path='minecraft:enchantment/entries',
+    key_pattern='minecraft:{key}',
+)
 class Enchantment(Enum):
 
     def __init__(self, namespace_id):
@@ -217,6 +248,20 @@ class Enchantment(Enum):
     VANISHING_CURSE = ('vanishing_curse')
 
 
+@Parser.Parser(
+    file='registries.json',
+    directory='data/minecraft/{version}/reports',
+    struct={
+        'protocol_id': {
+            '_action': {
+                'type': 'save',
+                'id': 'protocol_id',
+            },
+        },
+    },
+    array_path='minecraft:entity_type/entries',
+    key_pattern='minecraft:{key}',
+)
 class Entity(Enum):
     """ Entities, ordered by name """
 
@@ -331,3 +376,97 @@ class Entity(Enum):
     ZOMBIE_HORSE = ('zombie_horse')
     ZOMBIE_VILLAGER = ('zombie_villager')
     ZOMBIE_PIGMAN = ('zombie_pigman')
+
+
+@Parser.Parser(
+    file='registries.json',
+    directory='data/minecraft/{version}/reports',
+    struct={
+        'protocol_id': {
+            '_action': {
+                'type': 'save',
+                'id': 'protocol_id',
+            },
+        },
+    },
+    array_path='minecraft:particle_type/entries',
+    key_pattern='minecraft:{key}',
+)
+class Particle(Enum):
+    """ Particles, ordered by name """
+
+    def __init__(self, namespace_id):
+        self.namespace_id = namespace_id
+
+    AMBIENT_ENTITY_EFFECT = ('ambient_entity_effect')
+    ANGRY_VILLAGER = ('angry_villager')
+    BARRIER = ('barrier')
+    BLOCK = ('block')
+    BUBBLE = ('bubble')
+    CLOUD = ('cloud')
+    CRIT = ('crit')
+    DAMAGE_INDICATOR = ('damage_indicator')
+    DRAGON_BREATH = ('dragon_breath')
+    DRIPPING_LAVA = ('dripping_lava')
+    DRIPPING_WATER = ('dripping_water')
+    DUST = ('dust')
+    FALLING_LAVA = ('falling_lava')
+    FALLING_WATER = ('falling_water')
+    LANDING_LAVA = ('landing_lava')
+    EFFECT = ('effect')
+    ELDER_GUARDIAN = ('elder_guardian')
+    ENCHANTED_HIT = ('enchanted_hit')
+    ENCHANT = ('enchant')
+    END_ROD = ('end_rod')
+    ENTITY_EFFECT = ('entity_effect')
+    EXPLOSION_EMITTER = ('explosion_emitter')
+    EXPLOSION = ('explosion')
+    FALLING_DUST = ('falling_dust')
+    FIREWORK = ('firework')
+    FISHING = ('fishing')
+    FLAME = ('flame')
+    SOUL_FIRE_FLAME = ('soul_fire_flame')
+    SOUL = ('soul')
+    FLASH = ('flash')
+    HAPPY_VILLAGER = ('happy_villager')
+    COMPOSTER = ('composter')
+    HEART = ('heart')
+    INSTANT_EFFECT = ('instant_effect')
+    ITEM = ('item')
+    ITEM_SLIME = ('item_slime')
+    ITEM_SNOWBALL = ('item_snowball')
+    LARGE_SMOKE = ('large_smoke')
+    LAVA = ('lava')
+    MYCELIUM = ('mycelium')
+    NOTE = ('note')
+    POOF = ('poof')
+    PORTAL = ('portal')
+    RAIN = ('rain')
+    SMOKE = ('smoke')
+    SNEEZE = ('sneeze')
+    SPIT = ('spit')
+    SQUID_INK = ('squid_ink')
+    SWEEP_ATTACK = ('sweep_attack')
+    TOTEM_OF_UNDYING = ('totem_of_undying')
+    UNDERWATER = ('underwater')
+    SPLASH = ('splash')
+    WITCH = ('witch')
+    BUBBLE_POP = ('bubble_pop')
+    CURRENT_DOWN = ('current_down')
+    BUBBLE_COLUMN_UP = ('bubble_column_up')
+    NAUTILUS = ('nautilus')
+    DOLPHIN = ('dolphin')
+    CAMPFIRE_COSY_SMOKE = ('campfire_cosy_smoke')
+    CAMPFIRE_SIGNAL_SMOKE = ('campfire_signal_smoke')
+    DRIPPING_HONEY = ('dripping_honey')
+    FALLING_HONEY = ('falling_honey')
+    LANDING_HONEY = ('landing_honey')
+    FALLING_NECTAR = ('falling_nectar')
+    ASH = ('ash')
+    CRIMSON_SPORE = ('crimson_spore')
+    WARPED_SPORE = ('warped_spore')
+    DRIPPING_OBSIDIAN_TEAR = ('dripping_obsidian_tear')
+    FALLING_OBSIDIAN_TEAR = ('falling_obsidian_tear')
+    LANDING_OBSIDIAN_TEAR = ('landing_obsidian_tear')
+    REVERSE_PORTAL = ('reverse_portal')
+    WHITE_ASH = ('white_ash')

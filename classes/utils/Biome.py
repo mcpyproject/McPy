@@ -1,6 +1,22 @@
 from enum import Enum
 
+from classes.datafile.Parser import Parser
 
+
+@Parser.Parser(
+    file='registries.json',
+    directory='data/minecraft/{version}/reports',
+    struct={
+        'protocol_id': {
+            '_action': {
+                'type': 'save',
+                'id': 'protocol_id',
+            },
+        },
+    },
+    array_path='minecraft:biome/entries',
+    key_pattern='minecraft:{key}',
+)
 class Biome(Enum):
 
     def __init__(self, namespace_id):

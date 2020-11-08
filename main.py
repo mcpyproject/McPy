@@ -328,6 +328,14 @@ if __name__ == '__main__':
     import classes
     print("Classes imported !")
 
+    print("Loading data files, please wait ...")
+    # TODO Import it in another class
+    from classes.datafile.Parser import Parser
+    from classes.blocks.Materials import Material
+    Parser.parse_enums()
+    Material.post_load_blocks()
+    print("Data files loaded !")
+
     if test:
         _launch_test()
     else:
