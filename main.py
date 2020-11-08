@@ -328,6 +328,35 @@ if __name__ == '__main__':
     import classes
     print("Classes imported !")
 
+    print("Loading data files, please wait ...")
+    # TODO Import it in another class
+    print("Data files loaded !")
+    print("Importing Minecraft data, please wait ...")
+    from classes.blocks.Materials import Material
+    from classes.utils.Parser import Parser
+    from classes.utils.Utils import Version
+    versions_string = [
+        '1.13',
+        '1.13.1',
+        '1.13.2',
+        '1.14',
+        '1.14.1',
+        '1.14.2',
+        '1.14.3',
+        '1.14.4',
+        '1.15',
+        '1.15.1',
+        '1.15.2',
+        '1.16',
+        '1.16.1',
+        '1.16.2',
+        '1.16.3',
+        '1.16.4',
+    ]
+    parser = Parser(versions=versions_string)
+    data, versions = parser.parse()
+    Material.load_all_data(versions, data)
+
     if test:
         _launch_test()
     else:
