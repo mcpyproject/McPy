@@ -1,6 +1,8 @@
 # Import directories
 from . import blocks
+from . import entity
 from . import network
+from . import player
 from . import utils
 
 # Import files
@@ -10,3 +12,6 @@ from . import Exceptions
 #from . import PathFinder
 from . import TerrainFeatures
 from . import WorldGenerator
+
+# Other stuff, which require above stuff to be loaded
+from . import mcPy

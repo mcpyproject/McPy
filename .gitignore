@@ -2,7 +2,7 @@
 *.pyc
 .vscode
 __pycache__
-McPy/
+/McPy/
 
 McPyConfig.yaml
 /.idea/

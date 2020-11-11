@@ -1,4 +1,4 @@
-from ..PacketType import BasicNetwork
+from ..PacketType import BasicNetwork, BasicNetworkInput
 
 
 class v1_15_2(BasicNetwork):
@@ -6,7 +6,7 @@ class v1_15_2(BasicNetwork):
     @staticmethod
     def join_game(buff_type, entity_id=0, gamemode=0, dimension=0, hashed_seed=0, max_player=1, level_type='flat', view_distance=8, reduced_debug_info=True, show_respawn_screen=True):
         return [
-            buff_type.pack("iBqiB", entity_id, gamemode, dimension, hashed_seed, max_player),
+            buff_type.pack("iBiqB", entity_id, gamemode, dimension, hashed_seed, max_player),
             buff_type.pack_string(level_type),
             buff_type.pack_varint(view_distance),
             buff_type.pack('??', reduced_debug_info, show_respawn_screen)
@@ -55,3 +55,24 @@ class v1_15_2(BasicNetwork):
         return [
             buff_type.pack_chat(message) + buff_type.pack('B', 0)
         ]
+
+
+class v1_15_2_Input(BasicNetworkInput):
+
+    @staticmethod
+    def client_settings(buff_type):
+        # ['locale', 'view_distance', 'chat_mode', 'chat_color', 'skin_parts', 'main_hand']
+        locale = buff_type.unpack_string()
+        view_distance = buff_type.unpack('b')
+        chat_mode = buff_type.unpack_varint()
+        chat_color = buff_type.unpack('?')
+        skin_parts = buff_type.unpack('B')
+        main_hand = buff_type.unpack_varint()
+        return {
+            'locale': locale,
+            'view_distance': view_distance,
+            'chat_mode': chat_mode,
+            'chat_color': chat_color,
+            'skin_parts': skin_parts,
+            'main_hand': main_hand,
+        }
