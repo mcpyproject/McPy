@@ -20,7 +20,7 @@ with open('releases.json', 'r') as f:
     release_info = json.load(f)
 
 for releases in release_info:
-    brand = (releases['mcpyBrand'])
+    brand = "McPy/" + (releases['mcpyVersion'])
 
 class PlayerNetwork(server.ServerProtocol):
 
