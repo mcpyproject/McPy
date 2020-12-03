@@ -1,4 +1,4 @@
-# We need to import the server first to avoid having cicular imports
+# We need to import the server first to avoid having circular imports
 from . import Server
 
 # Import directories

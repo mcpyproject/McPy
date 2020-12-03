@@ -8,6 +8,8 @@ from classes.utils.Utils import Version
 from quarry.net import server
 from twisted.internet import reactor
 
+import classes.Server as Server
+
 from .IncomingPacketAction import ServerAction, ServerActionType
 from .PacketType import BasicNetwork, PacketType, PacketTypeInput
 from .versions.v578 import v1_15_2, v1_15_2_Input
@@ -220,7 +222,7 @@ class NetworkController:
     networking_process: multiprocessing.Process
 
     @staticmethod
-    def start_process(server, host='localhost', port=25565):
+    def start_process(server: Server, host='localhost', port=25565):
         """
         Start the Network process
         """

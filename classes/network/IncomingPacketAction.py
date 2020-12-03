@@ -1,5 +1,6 @@
 import enum
-import logging
+
+import classes.Server as Server
 
 
 class ServerActionType(enum.Enum):
@@ -18,7 +19,7 @@ class ServerActionType(enum.Enum):
 
 class ServerAction:
 
-    def __init__(self, server):
+    def __init__(self, server: Server):
         self.server = server
 
     def player_join(self, uuid, display_name, version):

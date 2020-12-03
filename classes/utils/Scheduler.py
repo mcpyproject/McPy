@@ -2,6 +2,8 @@ import logging
 from queue import PriorityQueue
 import threading
 
+import classes.Server as Server
+
 from ..utils.Thread import AtomicInteger
 
 
@@ -26,7 +28,7 @@ class Scheduler():
 
 class SchedulerManager():
 
-    def __init__(self, server, current_tick=0):
+    def __init__(self, server: Server, current_tick=0):
         self.server = server
         self.current_tick = current_tick
         self.atomic_id = AtomicInteger()

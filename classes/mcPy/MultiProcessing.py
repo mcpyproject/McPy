@@ -3,12 +3,14 @@ import multiprocessing
 import time
 from queue import Full
 
+import classes.Server as Server
+
 from ..Exceptions import ServerException
 
 
 class MultiProcessing():
 
-    def __init__(self, server, worker_number, max_size=100000):
+    def __init__(self, server: Server, worker_number, max_size=100000):
         self.server = server
         self.worker_number = worker_number
         self.max_size = max_size
