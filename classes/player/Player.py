@@ -1,10 +1,12 @@
 import logging
 
-from ..entity.Entity import Entity
-from ..network.Connection import NetworkController
-from ..network.PacketType import PacketType
-from ..utils.Vector import Vector3
-from ..utils.Utils import Version
+import classes.Server as Server
+
+from classes.entity.Entity import Entity
+from classes.network.Connection import NetworkController
+from classes.network.PacketType import PacketType
+from classes.utils.Vector import Vector3
+from classes.utils.Utils import Version
 
 
 class Player(Entity):
@@ -32,7 +34,7 @@ class Player(Entity):
 
 class PlayerManager():
 
-    def __init__(self, server):
+    def __init__(self, server: Server):
         self.server = server
         self.players = {}
 

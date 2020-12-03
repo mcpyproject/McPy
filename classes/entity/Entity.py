@@ -1,3 +1,5 @@
+import classes.Server as Server
+
 from ..utils.Thread import AtomicInteger
 from ..utils.Vector import Vector3
 
@@ -32,7 +34,7 @@ class Entity:
 
 class EntityManager():
 
-    def __init__(self, server):
+    def __init__(self, server: Server):
         self.server = server
         self.atomic_id = AtomicInteger()
         self.entities: [int, Entity] = {}

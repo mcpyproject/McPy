@@ -1,3 +1,6 @@
+# We need to import the server first to avoid having cicular imports
+from . import Server
+
 # Import directories
 from . import blocks
 from . import entity

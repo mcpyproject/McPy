@@ -2,13 +2,13 @@ import logging
 import time
 from twisted.internet import reactor
 
-from .MultiProcessing import MultiProcessing
-from .Parser import Parser
-from ..entity.Entity import EntityManager
-from ..network.Connection import NetworkController
-from ..network.PacketType import PacketType
-from ..player.Player import PlayerManager
-from ..utils.Scheduler import SchedulerManager
+from .mcPy.MultiProcessing import MultiProcessing
+from .mcPy.Parser import Parser
+from .entity.Entity import EntityManager
+from .network.Connection import NetworkController
+from .network.PacketType import PacketType
+from .player.Player import PlayerManager
+from .utils.Scheduler import SchedulerManager
 
 
 class Server:

@@ -4,7 +4,7 @@ import os
 import sys
 
 from .Parser import Parser
-from .Server import Server
+import classes.Server as Server
 
 
 def get_available_core():
@@ -36,7 +36,7 @@ def _launch(parser: Parser):
     avail_cores = get_available_core()
 
     # Here starts the server :D
-    server = Server(parser, avail_cores)
+    server = Server.Server(parser, avail_cores)
     if parser.test:
         server.run_test()
         return
