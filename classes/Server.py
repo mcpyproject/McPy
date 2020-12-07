@@ -107,4 +107,4 @@ class Server:
             pass
 
     def stop_internal_tick(self):
-        logging.info('Stoping ticks')
+        logging.info('Stopping ticks')

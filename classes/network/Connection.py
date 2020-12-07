@@ -86,8 +86,10 @@ class PlayerNetwork(server.ServerProtocol):
     def packet_chat_message(self, buff):
         # TODO Move this logic in another place
         p_text = buff.unpack_string()
+        message = "<{0}> {1}".format(self.display_name, p_text)
+        print(message)
         NetworkController.send_packet(packet_type=PacketType.CHAT_MESSAGE,
-                                      message="<{0}> {1}".format(self.display_name, p_text))
+                                      message=message)
 
     def add_packet(self, packet_type: PacketType, data):
         """
