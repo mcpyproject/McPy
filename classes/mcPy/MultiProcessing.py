@@ -19,15 +19,15 @@ class MultiProcessing():
         self.workers = []
         for i in range(self.worker_number):
             func_args = (self.TASK_LIST,)
-            p = multiprocessing.Process(target=MultiProcessing.worker, args=func_args)
+            p = multiprocessing.Process(target=MultiProcessing.worker, args=func_args, name='PROCESS_%d' % (i,))
             self.workers.append(p)
 
     def start(self):
         self.started = True
         for p in self.workers:
-            logging.info('Starting worker')
+            logging.info('Starting worker %s', p.name)
             p.start()
-            logging.info('Worker started')
+        logging.info('Workers started !')
 
     def stop(self, timeout=0):
         self.started = False

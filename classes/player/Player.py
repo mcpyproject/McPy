@@ -5,13 +5,13 @@ import classes.Server as Server
 from classes.entity.Entity import Entity
 from classes.network.Connection import NetworkController
 from classes.network.PacketType import PacketType
-from classes.utils.Vector import Vector3
+from classes.utils.Vector import Vector3D
 from classes.utils.Utils import Version
 
 
 class Player(Entity):
 
-    def __init__(self, entity_id, player_location: Vector3, world, uuid, display_name, version: Version, x_rot=0, y_rot=0):
+    def __init__(self, entity_id, player_location: Vector3D, world, uuid, display_name, version: Version, x_rot=0, y_rot=0):
         super(Player, self).__init__(entity_id, player_location, world, x_rot=x_rot, y_rot=y_rot)
         self.uuid = uuid
         self.display_name = display_name
@@ -39,7 +39,7 @@ class PlayerManager():
         self.players = {}
 
     def player_join(self, uuid, display_name, version: Version):
-        player = self.server.entity_manager.make_entity(Player, Vector3(0, 72, 0), 'world', uuid=uuid, display_name=display_name, version=version)
+        player = self.server.entity_manager.make_entity(Player, Vector3D(0, 72, 0), 'world', uuid=uuid, display_name=display_name, version=version)
         self.players[str(player.uuid)] = player
         logging.info('New player: uuid = %s, name = %s, version = %s', uuid, display_name, version)
         NetworkController.init_player(uuid, player.entity_id)

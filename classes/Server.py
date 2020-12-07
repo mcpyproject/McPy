@@ -34,8 +34,8 @@ class Server:
     def start(self):
         if self.started:
             return
-        self.started = True
         logging.info('Launching server ...')
+        self.started = True
         logging.info('Launching processes ...')
         self.multi_processing.start()
         NetworkController.start_process(self, 'localhost', 25565)
@@ -92,7 +92,7 @@ class Server:
         pytest.main(['-x', 'test'])
 
     def stop(self):
-        logging.info('Stopping server ...')
+        logging.info("Stopping server ...")
         self.started = False
         NetworkController.stop_process()
         # Stop multi_processing after 5 seconds

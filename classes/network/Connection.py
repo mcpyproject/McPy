@@ -227,7 +227,7 @@ class NetworkController:
         Start the Network process
         """
         NetworkController.actions = ServerAction(server)
-        NetworkController.networking_process = multiprocessing.Process(target=NetworkController.networker, args=(NetworkController.OUT_QUEUE, NetworkController.IN_QUEUE, host, port))
+        NetworkController.networking_process = multiprocessing.Process(target=NetworkController.networker, args=(NetworkController.OUT_QUEUE, NetworkController.IN_QUEUE, host, port), name='NETWORK_PROCESS')
         NetworkController.networking_process.start()
 
     @staticmethod
@@ -250,7 +250,7 @@ class NetworkController:
         server_factory.pre_start_server()
 
         # Let's start another thread that will start the server :D
-        server_thread = threading.Thread(target=server_factory.start_server)
+        server_thread = threading.Thread(target=server_factory.start_server, name='NETWORK_THREAD')
         server_thread.start()
         # Enter in a loop and read outgoing network packet
         while True:

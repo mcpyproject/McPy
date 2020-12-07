@@ -21,7 +21,6 @@ def get_available_core():
 
 def _launch(parser: Parser):
     try:
-        logging.info("The Blackfire probe")
         # noinspection PyUnresolvedReferences
         from blackfire import probe  # Profiler: https://blackfire.io free with the Git Student Package
     except ImportError:
@@ -31,7 +30,7 @@ def _launch(parser: Parser):
         BLACKFIRE_ENABLED = True
         probe.initialize()
         probe.enable()
-        logging.info("Enabled!")
+        logging.info("Blackfire Enabled!")
 
     avail_cores = get_available_core()
 
@@ -43,7 +42,6 @@ def _launch(parser: Parser):
     server.start()
 
     # End Network stuff
-    logging.info("Shutting down server!")
     server.stop()
     if BLACKFIRE_ENABLED:
         probe.end()
