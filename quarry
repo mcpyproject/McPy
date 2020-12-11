@@ -1,0 +1,13 @@
+pack(...)
+i       Int
+I       Unsigned Int
+b       Byte
+B       Unsigned Byte
+q       Long
+Q       Unsigned Long
+?       Boolean
+d       Double
+f       Float
+
+pack_string("string")
+pack_varint(1)

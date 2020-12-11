@@ -1,18 +1,20 @@
+import logging
 import multiprocessing
+import threading
 
 from multiprocessing.queues import Empty
 
 from classes.utils.Utils import Version
 from quarry.net import server
-from threading import Thread
 from twisted.internet import reactor
 
-from .PacketType import BasicNetwork, PacketType
-from .versions.v578 import v1_15_2
+import classes.Server as Server
+
+from .IncomingPacketAction import ServerAction, ServerActionType
+from .PacketType import BasicNetwork, PacketType, PacketTypeInput
+from .versions.v578 import v1_15_2, v1_15_2_Input
 
 
-# TODO Change that
-entity_id = 1
 QUEUE_SIZE = 100000
 
 
@@ -37,73 +39,34 @@ class PlayerNetwork(server.ServerProtocol):
                 break
 
     def player_joined(self):
+        """
+        Called when a player joins the server.
+        This method should call method player_joined_network of ServerFactory to completly load this player
+        """
         super(PlayerNetwork, self).player_joined()
-
+        # Load player's version
         if str(self.protocol_version) not in self.factory._protocol:
             # Version not supported
-            self.close('Invalid protocol or not supported, please use a supported version of Minecraft !')
+            self.close('Invalid or unsupported protocol, please use a supported version of Minecraft !')
             return
         self._protocol = self.factory._protocol[str(self.protocol_version)]
+        self._protocol_input = self.factory._protocol_input[str(self.protocol_version)]
         self.version = Version.get_version(self.protocol_version)
 
         self.TASK_QUEUE = multiprocessing.Queue(QUEUE_SIZE)
         self._handle_loop = self.ticker.add_loop(1, self.handle_loop)
-
-        # TODO Generate it
-        global entity_id
-        self.entity_id = entity_id
-        entity_id = entity_id + 1
-
-        # TODO Move it to another place (the next 5 make_packet_and_send should be sent by the server and not be hardcoded here !!!!)
-        # Send 'join_game' packet
-        self.make_packet_and_send(PacketType.JOIN_GAME, {
-            'entity_id': self.entity_id,
-            'gamemode': 3,
-            'dimension': 0,
-            'hashed_seed': 0,
-            'max_player': 100,
-            'level_type': 'flat',
-            'view_distance': 8,
-            'reduced_debug_info': False,
-            'show_respawn_screen': True,
-        })
-        # Send 'brand' packet
-        self.make_packet_and_send(PacketType.PLUGIN_MESSAGE, {
-            'channel': 'minecraft:brand',
-            'data': 'McPy/0.0.1-alpha',  # TODO Edit that
-        })
-        # Send 'difficulty' packet
-        self.make_packet_and_send(PacketType.SERVER_DIFFICULTY, {
-            'difficulty': 0,
-            'difficulty_locked': True,
-        })
-        # Send 'player_ability' packet
-        self.make_packet_and_send(PacketType.PLAYER_ABILITIES, {
-            'flag': 0,
-            'default_speed': 0.05,
-            'default_fov': 0.1,
-        })
-        # Send 'player_position_and_look' packet
-        self.make_packet_and_send(PacketType.PLAYER_POSITION_AND_LOOK, {
-            'x': 0,
-            'y': 0,
-            'z': 0,
-            'yaw': 0.0,
-            'pitch': 0.0,
-            'flags': 0,
-            'entity_id': self.entity_id,
-        })
-        # Start looper
+        # Keep alive loop
         self.ticker.add_loop(20, self._update_keep_alive)
         # Notify server
-        self.factory._player_joined(self)
+        self.factory.player_joined_network(self)
 
     def player_left(self):
         super(PlayerNetwork, self).player_left()
 
-        self.factory._player_left(self)
         if self._handle_loop:
             self._handle_loop.stop()
+
+        self.factory.player_left_network(self)
 
     def make_packet(self, packet_type: PacketType, data):
         packet_class = getattr(self._protocol, packet_type.id, None)
@@ -123,8 +86,10 @@ class PlayerNetwork(server.ServerProtocol):
     def packet_chat_message(self, buff):
         # TODO Move this logic in another place
         p_text = buff.unpack_string()
-        ServerThreadController.send_packet(packet_type=PacketType.CHAT_MESSAGE,
-                                           message="<{0}> {1}".format(self.display_name, p_text))
+        message = "<{0}> {1}".format(self.display_name, p_text)
+        print(message)
+        NetworkController.send_packet(packet_type=PacketType.CHAT_MESSAGE,
+                                      message=message)
 
     def add_packet(self, packet_type: PacketType, data):
         """
@@ -135,6 +100,15 @@ class PlayerNetwork(server.ServerProtocol):
             'packet_type': packet_type,
             'data': data,
         })
+
+    def on_packet(self, buff, packet_type: PacketTypeInput):
+        packet_class = getattr(self._protocol_input, packet_type.id, None)
+        if packet_class:
+            data = packet_class(buff)
+            NetworkController.execute_server(packet_type.server_action_type, uuid=self.uuid, **data)
+
+    def packet_client_settings(self, buff):
+        self.on_packet(buff, PacketTypeInput.CLIENT_SETTINGS)
 
     # def update_tablist(self):
     #     parsed_player_list = []
@@ -157,8 +131,12 @@ class ServerFactory(server.ServerFactory):
         self._port = port
         self.protocol = PlayerNetwork
         self._players = self.protocol._players = {}
+        self._unloaded_players = self.protocol._unloaded_players = {}
         self._protocol = {
             '578': v1_15_2()
+        }
+        self._protocol_input = {
+            '578': v1_15_2_Input()
         }
 
     def pre_start_server(self):
@@ -185,20 +163,47 @@ class ServerFactory(server.ServerFactory):
             return self._protocol[str(p.protocol_version)]
         return None
 
-    def _player_joined(self, player: PlayerNetwork):
-        # TODO Call a method in the main core
+    def player_joined_network(self, player: PlayerNetwork):
+        """
+        Called when there is a new player.
+        This method is called by PlayerNetwork class and should call appropriated methods in PlayerManager
+        """
         # We can add player to the list
-        self._players[str(player.entity_id)] = player
-        ServerThreadController.send_packet(packet_type=PacketType.CHAT_MESSAGE,
-                                           message=u"\u00a7e%s joined the game" % player.display_name)
+        self._unloaded_players[str(player.uuid)] = player
+        NetworkController.execute_server(ServerActionType.PLAYER_JOIN, uuid=player.uuid, display_name=player.display_name, version=player.version)
+        # NetworkController.send_packet(packet_type=PacketType.CHAT_MESSAGE,
+        #                               message=u"\u00a7e%s joined the game" % player.display_name)
 
-    def _player_left(self, player):
-        # TODO Call a method in the main core
-        # In any cases, we MUST remove the player from the list
+    def player_joined_server(self, uuid, entity_id):
+        """
+        Called by the Server to set an entity id to a player
+        """
+        # Set the id of the player
+        player = self._unloaded_players[str(uuid)]
+        if player:
+            player.entity_id = entity_id
+            self._players[str(entity_id)] = player
+            del self._unloaded_players[str(uuid)]
+
+    def player_left_network(self, player: PlayerNetwork):
+        """
+        Called when there is a player that left.
+        This method is called by PlayerNetwork class and should call appropriated methods in PlayerManager
+        """
+        NetworkController.execute_server(ServerActionType.PLAYER_LEFT, uuid=player.uuid)
         if str(player.entity_id) in self._players:
             del self._players[str(player.entity_id)]
-        ServerThreadController.send_packet(packet_type=PacketType.CHAT_MESSAGE,
-                                           message=u"\u00a7e%s left the game" % player.display_name)
+        NetworkController.send_packet(packet_type=PacketType.CHAT_MESSAGE,
+                                      message=u"\u00a7e%s left the game" % player.display_name)
+
+    def player_left_server(self, uuid=None, entity_id=-1):
+        """
+        Called by the Server to unload a player
+        """
+        if uuid:
+            del self._unloaded_players[str(uuid)]
+        if entity_id != -1:
+            del self._players[str(entity_id)]
 
     def send_packet(self, packet_type: PacketType, **data):
         for entity_id in self._players:
@@ -208,52 +213,56 @@ class ServerFactory(server.ServerFactory):
         p = self.get_player(entity_id)
         if p:
             p.add_packet(packet_type, **data)
-            # p.make_packet_and_send(packet_type, **data)
 
 
-class ServerThreadController:
-    # Incoming data to perform by the Network Process
-    TASK_QUEUE: multiprocessing.Queue
+class NetworkController:
+    # Outgoing data (Server => Clients)
+    OUT_QUEUE = multiprocessing.Queue(QUEUE_SIZE)
+    # Incoming data (Clients => Server)
+    IN_QUEUE = multiprocessing.Queue(QUEUE_SIZE)
     # The Network Process
     networking_process: multiprocessing.Process
 
-    def __init__(self, host='localhost', port=25565):
-        self.host = host
-        self.port = port
-        ServerThreadController.TASK_QUEUE = multiprocessing.Queue(QUEUE_SIZE)
-
-    def start_process(self):
+    @staticmethod
+    def start_process(server: Server, host='localhost', port=25565):
         """
         Start the Network process
         """
-        self.networking_process = multiprocessing.Process(target=ServerThreadController.networker, args=(ServerThreadController.TASK_QUEUE, self.host, self.port))
-        self.networking_process.start()
+        NetworkController.actions = ServerAction(server)
+        NetworkController.networking_process = multiprocessing.Process(target=NetworkController.networker, args=(NetworkController.OUT_QUEUE, NetworkController.IN_QUEUE, host, port), name='NETWORK_PROCESS')
+        NetworkController.networking_process.start()
 
-    def stop_process(self):
+    @staticmethod
+    def stop_process():
         """
         Stop the Network process
         """
-        if self.networking_process:
-            self.networking_process.terminate()
+        if NetworkController.networking_process:
+            NetworkController.networking_process.terminate()
 
     @staticmethod
-    def networker(TASK_QUEUE, host, port):
-        ServerThreadController.TASK_QUEUE = TASK_QUEUE
+    def networker(OUT_QUEUE, IN_QUEUE, host, port):
+        """
+        Here, we should be in another process.
+        This process is used by the network.
+        """
+        NetworkController.IN_QUEUE = IN_QUEUE
+        NetworkController.OUT_QUEUE = OUT_QUEUE
         server_factory = ServerFactory(host, port)
         server_factory.pre_start_server()
 
-        # Start the other process that will start the server
-        server_thread = Thread(target=server_factory.start_server)
+        # Let's start another thread that will start the server :D
+        server_thread = threading.Thread(target=server_factory.start_server, name='NETWORK_THREAD')
         server_thread.start()
-        # Enter in a loop and read incoming network packet
+        # Enter in a loop and read outgoing network packet
         while True:
             try:
-                item = ServerThreadController.TASK_QUEUE.get()
+                item = NetworkController.OUT_QUEUE.get()
             except KeyboardInterrupt:
                 break
             if item is None:
                 break
-            ServerThreadController._execute(server_factory, item)
+            NetworkController._execute(server_factory, item)
 
     @staticmethod
     def _execute(server_factory: ServerFactory, item):
@@ -264,7 +273,7 @@ class ServerThreadController:
         action = item['action']
         option = item['option'] if 'option' in item else {}
         if action == 'call_method':
-            ServerThreadController._execute_call_method(server_factory, option)
+            NetworkController._execute_call_method(server_factory, option)
 
     @staticmethod
     def _execute_call_method(server_factory: ServerFactory, option):
@@ -283,8 +292,30 @@ class ServerThreadController:
                 pass
 
     @staticmethod
+    def tick(current_tick):
+        """
+        Called by the server 20 times per seconds
+        Handle the incoming network packets
+        """
+        while True:
+            try:
+                item = NetworkController.IN_QUEUE.get_nowait()
+            except (KeyboardInterrupt, Empty):
+                break
+            if item is None:
+                break
+            action = item['action']
+            data = item['data']
+            method = getattr(NetworkController.actions, action.id, None)
+            if method:
+                # Execute the action
+                method(**data)
+            else:
+                logging.warn('Got an unknown action: %s', action.id)
+
+    @staticmethod
     def send_packet(packet_type: PacketType, **data):
-        ServerThreadController.TASK_QUEUE.put_nowait({
+        NetworkController.OUT_QUEUE.put_nowait({
             'action': 'call_method',
             'option': {
                 'name': 'send_packet',
@@ -296,8 +327,8 @@ class ServerThreadController:
         })
 
     @staticmethod
-    def send_packet_player(entity_id, packet_type: PacketType, **data):
-        ServerThreadController.TASK_QUEUE.put_nowait({
+    def send_packet_player(entity_id, packet_type: PacketType, data: dict):
+        NetworkController.OUT_QUEUE.put_nowait({
             'action': 'call_method',
             'option': {
                 'name': 'send_packet_player',
@@ -307,4 +338,37 @@ class ServerThreadController:
                     'data': data,
                 },
             },
+        })
+
+    @staticmethod
+    def init_player(uuid, entity_id):
+        NetworkController.OUT_QUEUE.put_nowait({
+            'action': 'call_method',
+            'option': {
+                'name': 'player_joined_server',
+                'args': {
+                    'uuid': uuid,
+                    'entity_id': entity_id,
+                },
+            },
+        })
+
+    @staticmethod
+    def destroy_player(uuid=None, entity_id=-1):
+        NetworkController.OUT_QUEUE.put_nowait({
+            'action': 'call_method',
+            'option': {
+                'name': 'player_left_server',
+                'args': {
+                    'uuid': uuid,
+                    'entity_id': entity_id,
+                },
+            },
+        })
+
+    @staticmethod
+    def execute_server(action: ServerActionType, **data):
+        NetworkController.IN_QUEUE.put_nowait({
+            'action': action,
+            'data': data,
         })

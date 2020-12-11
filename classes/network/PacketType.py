@@ -1,7 +1,12 @@
 import enum
 
+from .IncomingPacketAction import ServerActionType
+
 
 class PacketType(enum.Enum):
+    """
+    Server => Client
+    """
 
     def __init__(self, id, fields):
         self.id = id
@@ -17,7 +22,23 @@ class PacketType(enum.Enum):
     CHAT_MESSAGE = ('chat_message', ['message'])
 
 
+class PacketTypeInput(enum.Enum):
+    """
+    Client => Server
+    """
+
+    def __init__(self, id, server_action_type: ServerActionType, fields):
+        self.id = id
+        self.server_action_type = server_action_type
+        self.fields = fields
+
+    CLIENT_SETTINGS = ('client_settings', ServerActionType.CLIENT_SETTINGS, ['locale', 'view_distance', 'chat_mode', 'chat_color', 'skin_parts', 'main_hand'])
+
+
 class BasicNetwork:
+    """
+    Abstract class to transform data into readable packets
+    """
 
     @staticmethod
     def join_game(buff_type, entity_id=0, gamemode=0, dimension=0, hashed_seed=0, max_player=1, level_type='flat', view_distance=8, reduced_debug_info=False, show_respawn_screen=True):
@@ -49,4 +70,14 @@ class BasicNetwork:
 
     @staticmethod
     def chat_message(buff_type, message=None):
+        raise NotImplementedError()
+
+
+class BasicNetworkInput:
+    """
+    Abstract class to transform packets into data
+    """
+
+    @staticmethod
+    def client_settings(buff_type):
         raise NotImplementedError()
