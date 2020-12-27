@@ -12,9 +12,22 @@ if sys.version_info < (3, 8):
         sys.version_info.major, sys.version_info.minor, sys.version_info.micro))
     sys.exit(-4)
 
+# If the OS is Linux, the module "distro" will import
+try:
+    import distro
+except ModuleNotFoundError: # Windows and MacOS will not find this module, because they don't have distributions
+    pass
+
 # Make sure pip is installed
 logging.info("Making sure pip is installed...")
-subprocess.check_call([sys.executable, '-m', 'ensurepip'])
+try: # Debian and Ubuntu require pip to be installed differently because they disable ensurepip
+    linuxDistro = distro.linux_distribution()
+    if linuxDistro[1] == "Debian":
+        subprocess.check_call(['sudo', 'apt', 'install', 'python3-pip'])
+    if linuxDistro[1] == "Ubuntu":
+        subprocess.check_call(['sudo', 'apt', 'install', 'python3-pip'])
+except NameError: # If the system is not Linux, the module "distro" will not load, causing a NameError exception and the normal "ensurepip" module will work
+    subprocess.check_call([sys.executable, '-m', 'ensurepip']) # The module ensure pip check if pip is installed and installs it if it isn't
 logging.info("Pip is installed")
 
 # Make sure that dependencies are installed
@@ -24,9 +37,9 @@ try:
     subprocess.check_call(['git', 'init'])
     subprocess.check_call(['git', 'submodule', 'init'])
     subprocess.check_call(['git', 'submodule', 'update'])
-except:
+    logging.info("Dependencies installed")
+except subprocess.CalledProcessError:
     logging.fatal("Git is not installed! Please install it!")
-logging.info("Dependencies installed")
 
 # Finishing up
 with open('releases.json', 'r') as f:
@@ -40,5 +53,5 @@ logging.info("McPy version " + version + " is ready.")
 try:
     subprocess.check_call([sys.executable, 'main.py'])
     logging.info("McPy started!")
-except KeyboardInterrupt: # Catches keyboard interrupt caused by Crt-Cing the server process due to it being a subprocess
+except KeyboardInterrupt: # Catches keyboard interrupt caused by Ctrl-Cing the server process due to it being a subprocess
     logging.info("McPy stopped! Run main.py next time to start the server!")
