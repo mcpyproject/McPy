@@ -18,7 +18,7 @@ import zipfile
 
 import pkg_resources
 
-import classes
+
 # Set default logging level to INFO
 logging.basicConfig(level="INFO")
 
@@ -53,7 +53,8 @@ parser.add_argument("--launcher",        # options to pass to main.py
 		   default="none",
 		   help="options to pass to main.py (main server)")
 parser.add_argument("--ignoreCheck",     # ignore file check and download check if passed          
-		   action="store_false",
+		   action="store",
+		   default="False",
 		   help="Ignore MD5 check and download check")
 parsedArgs = parser.parse_args()
 
@@ -127,14 +128,15 @@ if parsedArgs.versions:
 
 version = parsedArgs.useversion
 
-def runServer(args):
-	if __name__ == "__main__":
-		classes.mcPy.main(parsedArgs.launcher)
+launcherArgs = parsedArgs.launcher
 		
 version = parsedArgs.useversion
-if parsedArgs.ignoreCheck:
+ignoreCheck = parsedArgs.ignoreCheck
+if ignoreCheck == True:
 	print("Ignoring File System and Download Check")
-	runServer()
+	import classes
+	if __name__ == "__main__":
+		classes.mcPy.main(launcherArgs)
 
 else:
 	currentDir = os.listdir(".")
@@ -181,4 +183,6 @@ else:
 		sys.exit(1)
 	else:
 		logging.info("McPy found! Running it...")
-		runServer()
+		import classes
+		if __name__ == "__main__":
+			classes.mcPy.main(launcherArgs)
