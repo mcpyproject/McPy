@@ -22,13 +22,7 @@ except ModuleNotFoundError: # Windows and MacOS will not find this module, becau
 logging.info("Making sure pip is installed...")
 try: # Debian and Ubuntu require pip to be installed differently because they disable ensurepip
     linuxDistro = distro.linux_distribution()
-    if linuxDistro[0] == "Debian":
-        try:
-            subprocess.check_call(['sudo', 'apt', 'install', 'python3-pip'])
-        except subprocess.CalledProcessError:
-            logging.fatal("You need to be a sudoer to install pip and the dependencies")
-            sys.exit(-4)
-    if linuxDistro[0] == "Ubuntu":
+    if linuxDistro[0] == "Debian" or linuxDistro[0] == "Ubuntu":
         try:
             subprocess.check_call(['sudo', 'apt', 'install', 'python3-pip'])
         except subprocess.CalledProcessError:
