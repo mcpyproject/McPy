@@ -3,7 +3,6 @@ import time
 from twisted.internet import reactor
 
 from .mcPy.MultiProcessing import MultiProcessing
-from .mcPy.Parser import Parser
 from .entity.Entity import EntityManager
 from .network.Connection import NetworkController
 from .network.PacketType import PacketType
@@ -17,9 +16,9 @@ class Server:
     scheduler_manager: SchedulerManager
     player_manager: PlayerManager
 
-    def __init__(self, parser: Parser, avail_cores=2):
+    def __init__(self, args, avail_cores=2):
         logging.info("%d cores available", avail_cores)
-        self.parser = parser
+        self.args = args
         if avail_cores < 2:
             avail_cores = 2
         self.avail_cores = avail_cores

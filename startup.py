@@ -18,6 +18,7 @@ import zipfile
 
 import pkg_resources
 
+import classes
 # Set default logging level to INFO
 logging.basicConfig(level="INFO")
 
@@ -40,21 +41,22 @@ except ImportError:
     sys.exit(1)
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--useversion",  # Command line flag to use McPy version
-                    action="store",  # Stores result of this flag in parsedArgs.useversion
+parser.add_argument("--useversion",    # Command line flag to use McPy version
+                    action="store",    # Stores result of this flag in parsedArgs.useversion
                     default="latest",  # Defaults to "latest" if this flag is not passed
                     help="version to use: defaults to latest")
-parser.add_argument("--versions",  # Command line flag to print out list of all versions
+parser.add_argument("--versions",         # Command line flag to print out list of all versions
                     action="store_true",  # If this flag is defined, parsedArgs.versions will be True: else False
                     help="print out a list of all McPy versions")
-parser.add_argument("--debug",  # Command line flag to set logging in DEBUG mode
-                    action="store_true",
-                    # Syntactic sugar to say 'default:"false"' (So, if --debug is set, this value is true)
-                    help="set logging to DEBUG level")
+parser.add_argument("--launcher",        # options to pass to main.py
+		   action="store",
+		   default="none",
+		   help="options to pass to main.py (main server)")
+parser.add_argument("--ignoreCheck",     # ignore file check and download check if passed          
+		   action="store_false",
+		   help="Ignore MD5 check and download check")
 parsedArgs = parser.parse_args()
 
-if parsedArgs.debug:
-    logging.basicConfig(level="DEBUG")
 
 # Automagically installs all packages required
 required = {"quarry", "twisted", "cryptography", "requests", "pytest"}
@@ -125,51 +127,58 @@ if parsedArgs.versions:
 
 version = parsedArgs.useversion
 
-currentDir = os.listdir(".")
-if "McPy" not in currentDir:
-    logging.warning("main.py not found! Downloading McPy again...")
-    if version == "latest":
-        logging.info("Downloading latest version...")
-        version = releases[len(releases) - 1]
-        downloadLink = version["downloadLink"]
-    else:
-        downloadLink = None
-        for v in releases:
-            if v["mcpyVersion"] == version:
-                version = v
-                downloadLink = v["downloadLink"]
-                break
-        if downloadLink is None:
-            logging.fatal("No download link found!")
-    logging.info("Downloading McPy server files...")
-    downloadedServer = requests.get(downloadLink)
-    try:
-        downloadedServer.raise_for_status()
-    except requests.exceptions.RequestException as e:
-        logging.error("Failed to download the server file! Rerun this script. Error: {0}".format(str(e)))
-    else:
-        logging.info("Successfully downloaded McPy!")
-    logging.info("Writing zip file...")
-    with open("mcPyTempFile.zip", "wb") as zf:
-        for j in downloadedServer.iter_content(100000):  # 100,000 bytes each time to be safe
-            zf.write(j)
-    logging.info("Checking checksums...")
-    sums = check_sums("mcPyTempFile.zip")
-    if sums[0] != version["md5sum"] or sums[1] != version["sha1sum"]:
-        logging.fatal("MD5 or SHA-1 sum does NOT MATCH! This could be a corruption, or it could be something more "
-                      "serious, like someone tampering with your connection.")
-        sys.exit(-10)
-    logging.info("Extracting file...")
-    with zipfile.ZipFile("mcPyTempFile.zip") as mcpyZipFile:
-        mcpyZipFile.extractall()
-    # Delete temp file mcPyTempFile.zip
-    logging.info("Cleaning up...")
-    os.remove("mcPyTempFile.zip")
-    logging.info("To run McPy, rerun this script!")
+def runServer(args):
+	if __name__ == "__main__":
+		classes.mcPy.main(parsedArgs.launcher)
+		
+version = parsedArgs.useversion
+if parsedArgs.ignoreCheck:
+	print("Ignoring File System and Download Check")
+	runServer()
+
 else:
-    logging.info("McPy found! Running it...")
-    data = [sys.executable, 'McPy/main.py']
-    if parsedArgs.debug:
-        data.append('--debug')
-    mcpyProcess = subprocess.check_call(data)
-    logging.info("startup.py: Server closed")
+	currentDir = os.listdir(".")
+	if "McPy" not in currentDir:
+		logging.warning("main.py not found! Downloading McPy again...")
+		if version == "latest":
+			logging.info("Downloading latest version...")
+			version = releases[len(releases) - 1]
+			downloadLink = version["downloadLink"]
+		else:
+			downloadLink = None
+			for v in releases:
+				if v["mcpyVersion"] == version:
+					version = v
+					downloadLink = v["downloadLink"]
+					break
+			if downloadLink is None:
+				logging.fatal("No download link found!")
+		logging.info("Downloading McPy server files...")
+		downloadedServer = requests.get(downloadLink)
+		try:
+			downloadedServer.raise_for_status()
+		except requests.exceptions.RequestException as e:
+			logging.error("Failed to download the server file! Rerun this script. Error: {0}".format(str(e)))
+		else:
+			logging.info("Successfully downloaded McPy!")
+		logging.info("Writing zip file...")
+		with open("mcPyTempFile.zip", "wb") as zf:
+			for j in downloadedServer.iter_content(100000):  # 100,000 bytes each time to be safe
+				zf.write(j)
+		logging.info("Checking checksums...")
+		sums = check_sums("mcPyTempFile.zip")
+		if sums[0] != version["md5sum"] or sums[1] != version["sha1sum"]:
+			logging.fatal("MD5 or SHA-1 sum does NOT MATCH! This could be a corruption, or it could be something more "
+						"serious, like someone tampering with your connection.")
+			sys.exit(-10)
+		logging.info("Extracting file...")
+		with zipfile.ZipFile("mcPyTempFile.zip") as mcpyZipFile:
+			mcpyZipFile.extractall()
+		# Delete temp file mcPyTempFile.zip
+		logging.info("Cleaning up...")
+		os.remove("mcPyTempFile.zip")
+		logging.info("To run McPy, rerun this script!")
+		sys.exit(1)
+	else:
+		logging.info("McPy found! Running it...")
+		runServer()

@@ -19,7 +19,7 @@ def get_available_core():
     return avail_cores
 
 
-def _launch(parser: Parser):
+def _launch(args):
     try:
         # noinspection PyUnresolvedReferences
         from blackfire import probe  # Profiler: https://blackfire.io free with the Git Student Package
@@ -31,11 +31,17 @@ def _launch(parser: Parser):
         probe.initialize()
         probe.enable()
         logging.info("Blackfire Enabled!")
-
-    avail_cores = get_available_core()
+    if "coreCount" in args:
+	logging.warning("Core Count flag set, only use this if you know what your doing. If you get an error turn off core count first")
+	for item in args:
+		if Item == "coreCount":
+			splitItem = item.split("=")
+			avail_cores = splitItem[1]
+    else:
+    	avail_cores = get_available_core()
 
     # Here starts the server :D
-    server = Server.Server(parser, avail_cores)
+    server = Server.Server(args, avail_cores)
     if parser.test:
         server.run_test()
         return
@@ -49,13 +55,13 @@ def _launch(parser: Parser):
     sys.exit(0)
 
 
-def main():
-    parser = Parser()
-
-    if parser.debug:
-        print('Debug mode enabled. Don\'t forget to remove debug flag for maximum performance !')
-    logging_level = logging.DEBUG if parser.debug else logging.INFO
+def main(args):
+    parsedArgs = args.split(",")
+    if "debug=true" in parsedArgs:
+        print('Debug mode enabled. This may slow down your server on slower hardware but not on newer hardware')
+    logging_level = logging.DEBUG if "debug=true" in parsedArgs else logging.INFO
     logging.basicConfig(format="[%(asctime)s - %(levelname)s - %(threadName)s] %(message)s")
     logging.root.setLevel(logging_level)
+    
 
-    _launch(parser)
+    _launch(parsedArgs)
