@@ -27,11 +27,13 @@ try: # Debian and Ubuntu require pip to be installed differently because they di
             subprocess.check_call(['sudo', 'apt', 'install', 'python3-pip'])
         except subprocess.CalledProcessError:
             logging.fatal("You need to be a sudoer to install pip and the dependencies")
+            sys.exit(-4)
     if linuxDistro[0] == "Ubuntu":
         try:
             subprocess.check_call(['sudo', 'apt', 'install', 'python3-pip'])
         except subprocess.CalledProcessError:
             logging.fatal("You need to be a sudoer to install pip and the dependencies")
+            sys.exit(-4)
 except NameError: # If the system is not Linux, the module "distro" will not load, causing a NameError exception and the normal "ensurepip" module will work
     subprocess.check_call([sys.executable, '-m', 'ensurepip']) # The module ensure pip check if pip is installed and installs it if it isn't
 logging.info("Pip is installed")
