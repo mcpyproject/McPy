@@ -44,7 +44,7 @@ for releases in release_info:
 logging.info("McPy version " + version + " is ready.")
 # Starts McPy
 try:
-    subprocess.check_call(sys.executable, 'main.py')
+    subprocess.check_call([sys.executable, 'main.py'])
     logging.info("McPy started!")
 except KeyboardInterrupt: # Catches keyboard interrupt caused by Crt-Cing the server process due to it being a subprocess
     logging.info("McPy stopped! Run main.py next time to start the server!")
