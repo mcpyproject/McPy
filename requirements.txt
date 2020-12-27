@@ -2,3 +2,4 @@ quarry
 twisted
 cryptography
 requests
+pytest
