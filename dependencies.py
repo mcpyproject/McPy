@@ -18,17 +18,8 @@ subprocess.check_call([sys.executable, '-m', 'ensurepip'])
 logging.info("Pip is installed")
 
 # Make sure that dependencies are installed
-logging.info("Checking for dependencies...")
-try:
-    import quarry
-except ImportError:
-    logging.info("Quarry not installed! Installing...")
-    subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'quarry'])
-try:
-    import pytest
-except ImportError:
-    logging.info("PyTest not installed! Installing...")
-    subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'pytest'])
+logging.info("Installing dependencies...")
+subprocess.check_call([sys.executable, '-m', 'pip', 'install', '-r', 'requirements.txt'])
 subprocess.check_call(['git', 'init'])
 subprocess.check_call(['git', 'submodule', 'init'])
 subprocess.check_call(['git', 'submodule', 'update'])
