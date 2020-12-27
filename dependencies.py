@@ -20,9 +20,12 @@ logging.info("Pip is installed")
 # Make sure that dependencies are installed
 logging.info("Installing dependencies...")
 subprocess.check_call([sys.executable, '-m', 'pip', 'install', '-r', 'requirements.txt'])
-subprocess.check_call(['git', 'init'])
-subprocess.check_call(['git', 'submodule', 'init'])
-subprocess.check_call(['git', 'submodule', 'update'])
+try:
+    subprocess.check_call(['git', 'init'])
+    subprocess.check_call(['git', 'submodule', 'init'])
+    subprocess.check_call(['git', 'submodule', 'update'])
+except:
+    logging.fatal("Git is not installed! Please install it!")
 logging.info("Dependencies installed")
 
 # Finishing up

@@ -6,7 +6,7 @@ A Minecraft server implementation written in Python
 McPy aims to be as fast as possible, while keeping as many game mechanics same as vanilla, and including a plugin system by default.
 
 ## Where can I download McPy?
-McPy is currently under heavy development: very few things are actually working. However, there is a very early alpha avalible: all you need to do is either download the .zip files from GitHub or clone the repository. Then run dependencies.py with **PYTHON 3.8 OR HIGHER** and wait for the dependencies to install and the server to start. Press Ctrl+C to stop it. Run main.py to start the server again.
+McPy is currently under heavy development: very few things are actually working. However, there is a very early alpha avalible: all you need to do is clone the repository (either by download of the .zip file or with git clone). Then run dependencies.py with **PYTHON 3.8 OR HIGHER** and wait for the dependencies to install and the server to start. As with all terminal-based applications, you can use Ctrl + C to abort this task. Run main.py to start the server again.
 
 ## Where can I get more info and help?
 Our support server: https://discord.gg/5bRV8ut
