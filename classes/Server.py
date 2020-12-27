@@ -26,7 +26,7 @@ class Server:
         self.started = False
         self.entity_manager = EntityManager(self)
         # Reserve one core for the network stuff
-        self.multi_processing = MultiProcessing(self, avail_cores - 1)
+        #self.multi_processing = MultiProcessing(self, avail_cores - 1)
         self.scheduler_manager = SchedulerManager(self)
         self.player_manager = PlayerManager(self)
 
@@ -36,7 +36,7 @@ class Server:
         logging.info('Launching server ...')
         self.started = True
         logging.info('Launching processes ...')
-        self.multi_processing.start()
+        #self.multi_processing.start()
         NetworkController.start_process(self, 'localhost', 25565)
 
         # TODO Move next lines in another place
