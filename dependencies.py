@@ -12,23 +12,18 @@ if sys.version_info < (3, 8):
         sys.version_info.major, sys.version_info.minor, sys.version_info.micro))
     sys.exit(-4)
 
-# If the OS is Linux, the module "distro" will import
-try:
-    import distro
-except ModuleNotFoundError: # Windows and MacOS will not find this module, because they don't have distributions
-    pass
-
 # Make sure pip is installed
 logging.info("Making sure pip is installed...")
 try: # Debian and Ubuntu require pip to be installed differently because they disable ensurepip
+    import distro
     linuxDistro = distro.linux_distribution()
     if linuxDistro[0] == "Debian" or linuxDistro[0] == "Ubuntu":
         try:
-            subprocess.check_call(['sudo', 'apt', 'install', 'python3-pip'])
+            subprocess.check_call(['apt', 'install', 'python3-pip', '-y'])
         except subprocess.CalledProcessError:
             logging.fatal("You need to be a sudoer to install pip and the dependencies")
             sys.exit(-4)
-except NameError: # If the system is not Linux, the module "distro" will not load, causing a NameError exception and the normal "ensurepip" module will work
+except ModuleNotFoundError: # If the system is not Linux, the module "distro" will not load, causing a ModuleNotFoundError exception and the normal "ensurepip" module will work
     subprocess.check_call([sys.executable, '-m', 'ensurepip']) # The module ensure pip check if pip is installed and installs it if it isn't
 logging.info("Pip is installed")
 
@@ -50,10 +45,4 @@ with open('releases.json', 'r') as f:
 for releases in release_info:
     version = releases["mcpyVersion"]
 
-logging.info("McPy version " + version + " is ready.")
-# Starts McPy
-try:
-    subprocess.check_call([sys.executable, 'main.py'])
-    logging.info("McPy started!")
-except KeyboardInterrupt: # Catches keyboard interrupt caused by Ctrl-Cing the server process due to it being a subprocess
-    logging.info("McPy stopped! Run main.py next time to start the server!")
+logging.info("McPy version " + version + " is ready. You can run the server with python3 main.py")
