@@ -55,7 +55,6 @@ def main():
     if parser.debug:
         print('Debug mode enabled. Don\'t forget to remove debug flag for maximum performance !')
     logging_level = logging.DEBUG if parser.debug else logging.INFO
-    logging.basicConfig(format="[%(asctime)s - %(levelname)s - %(threadName)s] %(message)s")
-    logging.root.setLevel(logging_level)
+    logging.basicConfig(level=logging_level, format=parser.format, force=True)
 
     _launch(parser)

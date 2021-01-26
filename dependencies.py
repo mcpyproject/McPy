@@ -4,7 +4,7 @@ import subprocess
 import json
 
 # Set default logging level to INFO
-logging.basicConfig(level="INFO")
+logging.basicConfig(level="INFO", format="[%(asctime)s - %(levelname)s - %(threadName)s] %(message)s", force=True)
 
 # Check if current python version is 3.8
 if sys.version_info < (3, 8):
