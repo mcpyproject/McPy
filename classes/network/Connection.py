@@ -149,7 +149,7 @@ class ServerFactory(server.ServerFactory):
         """
         reactor.run(installSignalHandlers=False)
 
-    def motd(self, motd):
+    def set_motd(self, motd):
         self.motd = motd
 
     def get_player(self, entity_id) -> PlayerNetwork:
