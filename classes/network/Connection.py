@@ -5,7 +5,9 @@ import threading
 from multiprocessing.queues import Empty
 
 from classes.utils.Utils import Version
+from quarry.data import packets
 from quarry.net import server
+from quarry.net.protocol import ProtocolError
 from twisted.internet import reactor
 
 import classes.Server as Server
@@ -122,6 +124,28 @@ class PlayerNetwork(server.ServerProtocol):
     #         parsed_player_list
     #     ))
 
+    # Methods overridden for compatibility ------------------------------------
+    def get_packet_name(self, ident):
+        protver = self.protocol_version
+        if self.protocol_mode == 'status':
+            protver = 578
+        key = (protver, self.protocol_mode, self.recv_direction,
+               ident)
+        try:
+            return packets.packet_names[key]
+        except KeyError:
+            raise ProtocolError("No name known for packet: %s" % (key,))
+
+    def get_packet_ident(self, name):
+        protver = self.protocol_version
+        if self.protocol_mode == 'status':
+            protver = 578
+        key = (protver, self.protocol_mode, self.send_direction,
+               name)
+        try:
+            return packets.packet_idents[key]
+        except KeyError:
+            raise ProtocolError("No ID known for packet: %s" % (key,))
 
 class ServerFactory(server.ServerFactory):
 
