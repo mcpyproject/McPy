@@ -1,5 +1,7 @@
+*.code-workspace
+*.pyc
 .vscode
 __pycache__
-McPy/
 
 McPyConfig.yaml
+/.idea/

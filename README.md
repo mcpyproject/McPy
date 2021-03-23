@@ -6,13 +6,16 @@ A Minecraft server implementation written in Python
 McPy aims to be as fast as possible, while keeping as many game mechanics same as vanilla, and including a plugin system by default.
 
 ## Where can I download McPy?
-McPy is currently under heavy development: very few things are actually working. However, there is a very early alpha avalible: all you need to do is download `startup.py` and run it with **PYTHON 3.8 OR HIGHER**. It'll exit the first time through: simply start it back up to run it. Press Ctrl+C to stop it.
-
-## How can I help development?
-Check out the issues and see if you can help solve one. If you've solved it, open a PR and it'll be merged into master.
+McPy is currently under heavy development: very few things are actually working. However, there is a very early alpha available: all you need to do is clone the repository (either by download of the .zip file or with git clone). Then run `python dependencies.py` for most OSes or `sudo python dependencies.py` for Debian-based Linux distributions with **PYTHON 3.8 OR HIGHER** and wait for the dependencies to install. After that run `python3 main.py` to start the server. As with all terminal-based applications, you can use Ctrl + C to abort this task.
 
 ## Where can I get more info and help?
 Our support server: https://discord.gg/5bRV8ut
 
-## How can I help break it?
+## Wanna help us finding bugs?
 Join the early alpha server: `play.skulltown.net:30000` with Minecraft version 1.15.2. 1.16+ will not work.
+
+## You found a bug or a feature is missing?
+Don't forget to report it [here](https://github.com/tazz4843/McPy/issues) if it hasn't been reported previously !
+
+## Wanna help us in development?
+More information [here](docs/howto_git.md)

@@ -3,7 +3,7 @@
 import asyncio
 
 from .Exceptions import OutOfBoundsError
-from .Blocks.materials import Material
+from .blocks.Materials import Material
 
 
 class Block:
