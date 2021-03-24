@@ -8,7 +8,7 @@ from enum import Enum
 from .Utils import Version
 
 
-class Parser():
+class DataParser():
     """
     A class that is used to parse, retrieve and store in memory data taken from https://github.com/PrismarineJS/minecraft-data.
     This class will retrieves data for given minecraft versions. If no version is provided, 

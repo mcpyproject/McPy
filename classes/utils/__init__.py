@@ -1,6 +1,5 @@
 from . import Biome
-from . import Location
-from . import Position
+from . import DataParser
 from . import Scheduler
 from . import Thread
 from . import Utils
