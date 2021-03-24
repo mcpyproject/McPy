@@ -5,3 +5,12 @@ __pycache__
 
 McPyConfig.yaml
 /.idea/
+
+# Folders that we create
+McPy/
+libs/
+
+# Eclipse files
+.project
+.pydevproject
+.settings/

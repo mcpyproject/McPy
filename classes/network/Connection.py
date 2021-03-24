@@ -89,7 +89,7 @@ class PlayerNetwork(server.ServerProtocol):
         # TODO Move this logic in another place
         p_text = buff.unpack_string()
         message = "<{0}> {1}".format(self.display_name, p_text)
-        print(message)
+        logging.info(message)
         NetworkController.send_packet(packet_type=PacketType.CHAT_MESSAGE,
                                       message=message)
 
