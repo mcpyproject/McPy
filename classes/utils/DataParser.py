@@ -15,11 +15,11 @@ class DataParser():
 
     Methods
     -------
-    Parser(file, submodule='', namespace_id='namespace_id', struct={}, id_path='')\n
-        \tRegister a class that will be parsed later
+    Parser(file, submodule='', namespace_id='namespace_id', struct={}, id_path='')
+        Register a class that will be parsed later
 
-    parse_enums()\n
-        \tLoad classes that have been registered previously.\n
+    parse_enums()
+        Load classes that have been registered previously.
         You can call this method multiple times, classes already loaded will not be reloaded
     """
 
@@ -32,12 +32,12 @@ class DataParser():
 
         Parameters
         ----------
-        directory : str\n
-            \tThe name of the directory where repository is.
-            \tDefault = 'minecraft-data/'
+        directory : str
+            The name of the directory where repository is.
+            Default = 'minecraft-data/'
 
-        versions : array\n
-            \tA list of versions to import. Add 'all' to import all versions
+        versions : array
+            A list of versions to import. Add 'all' to import all versions
         """
         if len(directory) > 0 and directory[-1] != '/':
             directory = directory + '/'

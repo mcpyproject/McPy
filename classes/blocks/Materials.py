@@ -153,11 +153,11 @@ class Material(Enum):
 
         Parameters
         ----------
-        protocol_id : int\n
-            \tThe protocol id of the material
+        protocol_id : int
+            The protocol id of the material
 
-        protocol_version : str\n
-            \tThe protocol version
+        protocol_version : str
+            The protocol version
         """
         return Material.protocol[version.data_id][protocol_id]
 
