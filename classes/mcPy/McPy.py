@@ -32,6 +32,20 @@ def _launch(parser: Parser):
         probe.enable()
         logging.info("Blackfire Enabled!")
 
+    logging.info("Loading data files, please wait ...")
+    # TODO Import it in another class
+    logging.info("Data files loaded !")
+    logging.info("Importing Minecraft data, please wait ...")
+    from classes.blocks.Materials import Material
+    from classes.utils.DataParser import DataParser
+    from classes.utils.Utils import Version
+    versions_string = [ # Theoretically, other versions could be added here
+        '1.15.2'
+    ]
+    dataparser = DataParser(versions=versions_string)
+    data, versions = dataparser.parse()
+    Material.load_all_data(versions, data)
+
     avail_cores = get_available_core()
 
     # Here starts the server :D

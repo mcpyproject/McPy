@@ -4,3 +4,6 @@
 [submodule "libs/quarry"]
 	path = libs/quarry
 	url = https://github.com/barneygale/quarry
+[submodule "minecraft-data"]
+	path = minecraft-data
+	url = https://github.com/PrismarineJS/minecraft-data

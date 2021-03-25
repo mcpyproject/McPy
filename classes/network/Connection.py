@@ -24,7 +24,7 @@ class PlayerNetwork(server.ServerProtocol):
 
     def handle_loop(self):
         """
-        This method will check if there is a packet to send to the player and if there is, it sends the packet\n
+        This method will check if there is a packet to send to the player and if there is, it sends the packet
         This method is called 20 times per seconds
         """
         while True:
@@ -89,13 +89,13 @@ class PlayerNetwork(server.ServerProtocol):
         # TODO Move this logic in another place
         p_text = buff.unpack_string()
         message = "<{0}> {1}".format(self.display_name, p_text)
-        print(message)
+        logging.info(message)
         NetworkController.send_packet(packet_type=PacketType.CHAT_MESSAGE,
                                       message=message)
 
     def add_packet(self, packet_type: PacketType, data):
         """
-        Add a packet into the QUEUE\n
+        Add a packet into the QUEUE
         The packet will be sent to the player on the next tick
         """
         self.TASK_QUEUE.put_nowait({
@@ -168,7 +168,7 @@ class ServerFactory(server.ServerFactory):
 
     def start_server(self):
         """
-        Start the server\n
+        Start the server
         THIS METHOD BLOCKS, IT SHOULD BE CALLED IN ASYNC OR IN ANOTHER THREAD
         """
         reactor.run(installSignalHandlers=False)

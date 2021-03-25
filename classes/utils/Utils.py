@@ -5,11 +5,12 @@ from enum import Enum, IntEnum
 
 class Version(Enum):
 
-    def __init__(self, major, minor, version, protocol):
+    def __init__(self, major, minor, version, protocol, data_id):
         self.major = major
         self.minor = minor
         self.version = version
         self.protocol = protocol
+        self.data_id = data_id
         self.all = (major, minor, version)
 
     def is_same_major(self, other_version):
@@ -21,6 +22,16 @@ class Version(Enum):
             if v.protocol == protocol:
                 return v
         return None
+
+    @staticmethod
+    def get_version_data_file(data_id):
+        for v in Version:
+            if v.data_id == data_id:
+                return v
+        return None
+
+    def to_string(self):
+        return '{}.{}.{}'.format(self.major, self.minor, self.version)
 
     def __lt__(self, other):
         if type(other) == tuple:
@@ -49,23 +60,26 @@ class Version(Enum):
         else:
             return self.all > other.all
 
-    v1_12_0 = (1, 12, 0, 335)
-    v1_12_1 = (1, 12, 1, 338)
-    v1_12_2 = (1, 12, 2, 340)
-    v1_13_0 = (1, 13, 0, 393)
-    v1_13_1 = (1, 13, 1, 401)
-    v1_13_2 = (1, 13, 2, 404)
-    v1_14_0 = (1, 14, 0, 477)
-    v1_14_1 = (1, 14, 1, 480)
-    v1_14_2 = (1, 14, 2, 485)
-    v1_14_3 = (1, 14, 3, 490)
-    v1_14_4 = (1, 14, 4, 498)
-    v1_15_0 = (1, 15, 0, 573)
-    v1_15_1 = (1, 15, 1, 575)
-    v1_15_2 = (1, 15, 2, 578)
-    v1_16_0 = (1, 16, 0, 735)
-    v1_16_1 = (1, 16, 1, 736)
-    v1_16_2 = (1, 16, 2, 751)
+    v1_12_0 = (1, 12, 0, 335, '1.12')
+    v1_12_1 = (1, 12, 1, 338, '1.12.1')
+    v1_12_2 = (1, 12, 2, 340, '1.12.2')
+    v1_13_0 = (1, 13, 0, 393, '1.13')
+    v1_13_1 = (1, 13, 1, 401, '1.13.1')
+    v1_13_2 = (1, 13, 2, 404, '1.13.2')
+    v1_14_0 = (1, 14, 0, 477, '1.14')
+    v1_14_1 = (1, 14, 1, 480, '1.14.1')
+    v1_14_2 = (1, 14, 2, 485, '1.14.2')
+    v1_14_3 = (1, 14, 3, 490, '1.14.3')
+    v1_14_4 = (1, 14, 4, 498, '1.14.4')
+    v1_15_0 = (1, 15, 0, 573, '1.15')
+    v1_15_1 = (1, 15, 1, 575, '1.15.1')
+    v1_15_2 = (1, 15, 2, 578, '1.15.2')
+    v1_16_0 = (1, 16, 0, 735, '1.16')
+    v1_16_1 = (1, 16, 1, 736, '1.16.1')
+    v1_16_2 = (1, 16, 2, 751, '1.16.2')
+    v1_16_3 = (1, 16, 3, 753, '1.16.3')
+    v1_16_4 = (1, 16, 4, 754, '1.16.4')
+    v1_16_5 = (1, 16, 5, 754, '1.16.5')
 
 
 class GameMode(IntEnum):
@@ -331,3 +345,83 @@ class Entity(Enum):
     ZOMBIE_HORSE = ('zombie_horse')
     ZOMBIE_VILLAGER = ('zombie_villager')
     ZOMBIE_PIGMAN = ('zombie_pigman')
+
+
+class Particle(Enum):
+    """ Particles, ordered by name """
+
+    def __init__(self, namespace_id):
+        self.namespace_id = namespace_id
+
+    AMBIENT_ENTITY_EFFECT = ('ambient_entity_effect')
+    ANGRY_VILLAGER = ('angry_villager')
+    BARRIER = ('barrier')
+    BLOCK = ('block')
+    BUBBLE = ('bubble')
+    CLOUD = ('cloud')
+    CRIT = ('crit')
+    DAMAGE_INDICATOR = ('damage_indicator')
+    DRAGON_BREATH = ('dragon_breath')
+    DRIPPING_LAVA = ('dripping_lava')
+    DRIPPING_WATER = ('dripping_water')
+    DUST = ('dust')
+    FALLING_LAVA = ('falling_lava')
+    FALLING_WATER = ('falling_water')
+    LANDING_LAVA = ('landing_lava')
+    EFFECT = ('effect')
+    ELDER_GUARDIAN = ('elder_guardian')
+    ENCHANTED_HIT = ('enchanted_hit')
+    ENCHANT = ('enchant')
+    END_ROD = ('end_rod')
+    ENTITY_EFFECT = ('entity_effect')
+    EXPLOSION_EMITTER = ('explosion_emitter')
+    EXPLOSION = ('explosion')
+    FALLING_DUST = ('falling_dust')
+    FIREWORK = ('firework')
+    FISHING = ('fishing')
+    FLAME = ('flame')
+    SOUL_FIRE_FLAME = ('soul_fire_flame')
+    SOUL = ('soul')
+    FLASH = ('flash')
+    HAPPY_VILLAGER = ('happy_villager')
+    COMPOSTER = ('composter')
+    HEART = ('heart')
+    INSTANT_EFFECT = ('instant_effect')
+    ITEM = ('item')
+    ITEM_SLIME = ('item_slime')
+    ITEM_SNOWBALL = ('item_snowball')
+    LARGE_SMOKE = ('large_smoke')
+    LAVA = ('lava')
+    MYCELIUM = ('mycelium')
+    NOTE = ('note')
+    POOF = ('poof')
+    PORTAL = ('portal')
+    RAIN = ('rain')
+    SMOKE = ('smoke')
+    SNEEZE = ('sneeze')
+    SPIT = ('spit')
+    SQUID_INK = ('squid_ink')
+    SWEEP_ATTACK = ('sweep_attack')
+    TOTEM_OF_UNDYING = ('totem_of_undying')
+    UNDERWATER = ('underwater')
+    SPLASH = ('splash')
+    WITCH = ('witch')
+    BUBBLE_POP = ('bubble_pop')
+    CURRENT_DOWN = ('current_down')
+    BUBBLE_COLUMN_UP = ('bubble_column_up')
+    NAUTILUS = ('nautilus')
+    DOLPHIN = ('dolphin')
+    CAMPFIRE_COSY_SMOKE = ('campfire_cosy_smoke')
+    CAMPFIRE_SIGNAL_SMOKE = ('campfire_signal_smoke')
+    DRIPPING_HONEY = ('dripping_honey')
+    FALLING_HONEY = ('falling_honey')
+    LANDING_HONEY = ('landing_honey')
+    FALLING_NECTAR = ('falling_nectar')
+    ASH = ('ash')
+    CRIMSON_SPORE = ('crimson_spore')
+    WARPED_SPORE = ('warped_spore')
+    DRIPPING_OBSIDIAN_TEAR = ('dripping_obsidian_tear')
+    FALLING_OBSIDIAN_TEAR = ('falling_obsidian_tear')
+    LANDING_OBSIDIAN_TEAR = ('landing_obsidian_tear')
+    REVERSE_PORTAL = ('reverse_portal')
+    WHITE_ASH = ('white_ash')
