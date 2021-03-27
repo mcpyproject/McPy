@@ -1,7 +1,6 @@
 import logging
 import multiprocessing
 import threading
-import platform
 
 from multiprocessing.queues import Empty
 
@@ -17,10 +16,6 @@ from .IncomingPacketAction import ServerAction, ServerActionType
 from .PacketType import BasicNetwork, PacketType, PacketTypeInput
 from .versions.v578 import v1_15_2, v1_15_2_Input
 
-if (platform.system()== 'Darwin'):
-    QUEUE_SIZE = 32767
-else:
-    QUEUE_SIZE = 100000
 
 class PlayerNetwork(server.ServerProtocol):
 
