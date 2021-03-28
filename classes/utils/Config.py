@@ -22,7 +22,6 @@ class ConfigParser:
         config_location = 'server.properties'
         if not isfile(config_location):
             raise Exceptions.NotAFileError
-            yield i
 
     def __enter__(self):
         self.load_config()
