@@ -19,7 +19,7 @@ class ConfigParser:
     """
 
     def __init__(self, _type: int = 1):
-        config_location = 'server.properties'
+        config_location = 'server_properties.yaml'
         if not isfile(config_location):
             raise Exceptions.NotAFileError
 
@@ -36,7 +36,7 @@ class ConfigParser:
         :return: Config
         :raises Exceptions.FormattingError: if a exceptions is created by the loaders
         """
-        config_location = 'server.properties'
+        config_location = 'server_properties.yaml'
         if not isfile(config_location):
             raise Exceptions.NotAFileError
         if type == 1:

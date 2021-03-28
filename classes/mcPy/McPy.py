@@ -24,11 +24,15 @@ def get_available_core():
 
 def _launch(parser: Parser):
     if (config['use_blackfire'] == True):
-        BLACKFIRE_ENABLED = True
-        from blackfire import probe
-        probe.initialize()
-        probe.enable()
-        logging.info("Blackfire Enabled!")
+        try:
+            from blackfire import probe
+            probe.initialize()
+            probe.enable()
+            logging.info("Blackfire Enabled!")
+            BLACKFIRE_ENABLED = True
+        except ModuleNotFoundError:
+            logging.info("Blackfire Module not found; passing!")
+            BLACKFIRE_ENABLED = False
     else:
         BLACKFIRE_ENABLED = False
 
