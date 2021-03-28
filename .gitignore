@@ -3,6 +3,8 @@
 .vscode
 __pycache__
 
+quarry
+
 McPyConfig.yaml
 /.idea/
 

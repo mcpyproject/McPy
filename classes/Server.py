@@ -9,6 +9,9 @@ from .network.Connection import NetworkController
 from .network.PacketType import PacketType
 from .player.Player import PlayerManager
 from .utils.Scheduler import SchedulerManager
+from classes.utils.Config import ConfigParser
+
+config = ConfigParser.load_config(1)
 
 
 class Server:
@@ -38,7 +41,7 @@ class Server:
         self.started = True
         logging.info('Launching processes ...')
         self.multi_processing.start()
-        NetworkController.start_process(self, 'localhost', 25565)
+        NetworkController.start_process(self, config['ip'], config['port'])
 
         # TODO Move next lines in another place
         self.total_time = 0

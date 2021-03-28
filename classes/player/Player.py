@@ -1,4 +1,5 @@
 import logging
+import json
 
 import classes.Server as Server
 
@@ -7,6 +8,12 @@ from classes.network.Connection import NetworkController
 from classes.network.PacketType import PacketType
 from classes.utils.Vector import Vector3D
 from classes.utils.Utils import Version
+
+with open('releases.json', 'r') as f:
+    release_info = json.load(f)
+
+for releases in release_info:
+    version = releases["mcpyVersion"]
 
 
 class Player(Entity):
@@ -84,7 +91,7 @@ class PlayerManager():
         # 'brand'
         NetworkController.send_packet_player(player.entity_id, PacketType.PLUGIN_MESSAGE, {
             'channel': 'minecraft:brand',
-            'data': 'McPy/0.0.1-alpha',
+            'data': 'McPy/' + version,
         })
         # 'difficulty'
         NetworkController.send_packet_player(player.entity_id, PacketType.SERVER_DIFFICULTY, {
