@@ -9,10 +9,6 @@ from .network.Connection import NetworkController
 from .network.PacketType import PacketType
 from .player.Player import PlayerManager
 from .utils.Scheduler import SchedulerManager
-from classes.utils.Config import ConfigParser
-
-config = ConfigParser.load_config(1)
-
 
 class Server:
     entity_manager: EntityManager
@@ -34,19 +30,19 @@ class Server:
         self.scheduler_manager = SchedulerManager(self)
         self.player_manager = PlayerManager(self)
 
-    def start(self):
+    def start(self, host, port):
         if self.started:
             return
         logging.info('Launching server ...')
         self.started = True
         logging.info('Launching processes ...')
         self.multi_processing.start()
-        NetworkController.start_process(self, config['ip'], config['port'])
+        NetworkController.start_process(self, host, port)
 
         # TODO Move next lines in another place
         self.total_time = 0
         self.day_time = 0
-
+        logging.info('McPy started on %s:%s', host, port)
         self.start_internal_tick()
 
     def start_internal_tick(self):

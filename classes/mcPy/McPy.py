@@ -58,7 +58,7 @@ def _launch(parser: Parser):
     if parser.test:
         server.run_test()
         return
-    server.start()
+    server.start(config['ip'], config['port'])
 
     # End Network stuff
     server.stop()
