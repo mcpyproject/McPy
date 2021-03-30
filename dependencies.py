@@ -35,7 +35,10 @@ try:
     subprocess.check_call(['git', 'submodule', 'init'])
     subprocess.check_call(['git', 'submodule', 'update'])
     logging.info("Dependencies installed")
-except subprocess.CalledProcessError:
+except subprocess.CalledProcessError as e:
+    if (e.returncode == 127):
+        logging.fatal("Git is not installed! Please install it!")
+except FileNotFoundError:
     logging.fatal("Git is not installed! Please install it!")
 
 # Finishing up
