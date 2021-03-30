@@ -58,7 +58,7 @@ class MultiProcessing():
         try:
             self.TASK_LIST.put_nowait(data)
         except Full:
-            logging.warning()
+            logging.warning(Full)
 
     @staticmethod
     def worker(in_queue: multiprocessing.Queue):

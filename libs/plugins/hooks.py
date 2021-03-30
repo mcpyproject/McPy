@@ -1,5 +1,4 @@
 # coding=utf-8
-import libs.plugins
 import functools
 PLUGINS = {}
 PLUGIN_HOOKS = ("PLUGIN_ENABLE", "PLUGIN_DISABLE", "PLAYER_CHAT_EVENT", "BLOCK_BREAK_EVENT", "MOB_DAMAGE_EVENT")

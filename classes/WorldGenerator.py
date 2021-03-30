@@ -2,7 +2,7 @@
 from math import floor, sqrt
 from random import randint
 
-from .BasicClasses import Block, Chunk, Region
+from .BasicClasses import Block, Chunk
 from .TerrainFeatures import AbstractTerrainFeature, AbstractTreeGenerator, MatchstickTreeGenerator, OreFeature
 from .blocks.Materials import Material
 
@@ -320,7 +320,6 @@ class SimplexNoise(BaseNoise):
         gi3 = perm[ii + 1 + perm[jj + 1 + perm[kk + 1]]] % 12
 
         # Calculate the contribution from the four corners
-        noise = 0.0
         tt = 0.6 - x0 ** 2 - y0 ** 2 - z0 ** 2
         if tt > 0:
             g = _GRAD3[gi0]

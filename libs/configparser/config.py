@@ -35,7 +35,7 @@ class ConfigParser:
         self.load_config()
         return self
 
-    def __exit__(self):
+    def __exit__(self, type, value, traceback):
         pass
 
     def load_config(self):
