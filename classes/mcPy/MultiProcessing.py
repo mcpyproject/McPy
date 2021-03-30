@@ -15,7 +15,7 @@ class MultiProcessing():
         self.worker_number = worker_number
         self.max_size = max_size
         self.started = True
-        self.TASK_LIST = multiprocessing.Queue(maxsize=max_size)
+        self.TASK_LIST = multiprocessing.Queue()
         self.workers = []
         for i in range(self.worker_number):
             func_args = (self.TASK_LIST,)

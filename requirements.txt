@@ -1,5 +1,6 @@
 quarry
 twisted
-cryptography
+cryptography>=3.2
 requests
 pytest
+psutil
