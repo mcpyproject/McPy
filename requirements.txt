@@ -3,3 +3,4 @@ twisted
 cryptography
 requests
 pytest
+yaml
