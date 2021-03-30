@@ -40,6 +40,7 @@ except subprocess.CalledProcessError as e:
         logging.fatal("Git is not installed! Please install it!")
 except FileNotFoundError:
     logging.fatal("Git is not installed! Please install it!")
+    sys.exit(-1)
 
 # Finishing up
 with open('releases.json', 'r') as f:
