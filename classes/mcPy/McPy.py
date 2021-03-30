@@ -2,6 +2,7 @@ import logging
 import multiprocessing
 import os
 import sys
+import psutil
 
 from .Parser import Parser
 import classes.Server as Server
@@ -11,14 +12,7 @@ config = ConfigParser.load_config(1)
 
 
 def get_available_core():
-    try:
-        avail_cores = len(os.sched_getaffinity(0))
-    except AttributeError:
-        # Fix for windows, which doesnt support getaffinity
-        logging.warning(
-            "Falling back to multiprocessing cpu_count to calc cores. Most likely getaffinity is not supported on "
-            "your OS")
-        avail_cores = multiprocessing.cpu_count()
+    avail_cores = psutil.cpu_count()
     return avail_cores
 
 

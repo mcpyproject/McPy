@@ -19,9 +19,6 @@ from classes.utils.Config import ConfigParser
 
 config = ConfigParser.load_config(1)
 
-QUEUE_SIZE = 100000
-
-
 class PlayerNetwork(server.ServerProtocol):
 
     def handle_loop(self):
@@ -57,7 +54,7 @@ class PlayerNetwork(server.ServerProtocol):
         self._protocol_input = self.factory._protocol_input[str(self.protocol_version)]
         self.version = Version.get_version(self.protocol_version)
 
-        self.TASK_QUEUE = multiprocessing.Queue(QUEUE_SIZE)
+        self.TASK_QUEUE = multiprocessing.Queue()
         self._handle_loop = self.ticker.add_loop(1, self.handle_loop)
         # Keep alive loop
         self.ticker.add_loop(20, self._update_keep_alive)
@@ -246,9 +243,9 @@ class ServerFactory(server.ServerFactory):
 
 class NetworkController:
     # Outgoing data (Server => Clients)
-    OUT_QUEUE = multiprocessing.Queue(QUEUE_SIZE)
+    OUT_QUEUE = multiprocessing.Queue()
     # Incoming data (Clients => Server)
-    IN_QUEUE = multiprocessing.Queue(QUEUE_SIZE)
+    IN_QUEUE = multiprocessing.Queue()
     # The Network Process
     networking_process: multiprocessing.Process
 
