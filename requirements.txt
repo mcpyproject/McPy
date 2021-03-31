@@ -3,5 +3,5 @@ twisted
 cryptography>=3.2
 requests
 pytest
-yaml
+PyYAML
 psutil
