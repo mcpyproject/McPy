@@ -15,7 +15,9 @@ import classes.Server as Server
 from .IncomingPacketAction import ServerAction, ServerActionType
 from .PacketType import BasicNetwork, PacketType, PacketTypeInput
 from .versions.v578 import v1_15_2, v1_15_2_Input
+from classes.utils.Config import ConfigParser
 
+config = ConfigParser.load_config(1)
 
 class PlayerNetwork(server.ServerProtocol):
 
@@ -146,7 +148,7 @@ class PlayerNetwork(server.ServerProtocol):
 
 class ServerFactory(server.ServerFactory):
 
-    def __init__(self, host='localhost', port=25565):
+    def __init__(self, host=config['ip'], port=config['port']):
         super(ServerFactory, self).__init__()
         self._host = host
         self._port = port
@@ -172,6 +174,9 @@ class ServerFactory(server.ServerFactory):
 
     def set_motd(self, motd):
         self.motd = motd
+
+    def set_max_players(self, max_players):
+        self.max_players = max_players
 
     def get_player(self, entity_id) -> PlayerNetwork:
         if str(entity_id) in self._players:
@@ -245,7 +250,7 @@ class NetworkController:
     networking_process: multiprocessing.Process
 
     @staticmethod
-    def start_process(server: Server, host='localhost', port=25565):
+    def start_process(server: Server, host=config['ip'], port=config['port']):
         """
         Start the Network process
         """
@@ -271,6 +276,8 @@ class NetworkController:
         NetworkController.OUT_QUEUE = OUT_QUEUE
         server_factory = ServerFactory(host, port)
         server_factory.pre_start_server()
+        server_factory.set_motd(config['motd'])
+        server_factory.set_max_players(config['max_players'])
 
         # Let's start another thread that will start the server :D
         server_thread = threading.Thread(target=server_factory.start_server, name='NETWORK_THREAD')

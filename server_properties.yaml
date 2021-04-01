@@ -1,0 +1,5 @@
+port: 25565
+ip: 0.0.0.0
+motd: A Minecraft Server
+use_blackfire: false
+max_players: 20

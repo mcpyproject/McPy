@@ -6,6 +6,9 @@ import psutil
 
 from .Parser import Parser
 import classes.Server as Server
+from classes.utils.Config import ConfigParser
+
+config = ConfigParser.load_config(1)
 
 
 def get_available_core():
@@ -14,17 +17,19 @@ def get_available_core():
 
 
 def _launch(parser: Parser):
-    try:
-        # noinspection PyUnresolvedReferences
-        from blackfire import probe  # Profiler: https://blackfire.io free with the Git Student Package
-    except ImportError:
-        BLACKFIRE_ENABLED = False
-        logging.info("Blackfire not installed: passing")
+    if (config['use_blackfire'] == True):
+        try:
+            from blackfire import probe
+            probe.initialize()
+            probe.enable()
+            logging.info("Blackfire Enabled!")
+            BLACKFIRE_ENABLED = True
+        except ModuleNotFoundError:
+            logging.info("Blackfire Module not found; passing!")
+            BLACKFIRE_ENABLED = False
     else:
-        BLACKFIRE_ENABLED = True
-        probe.initialize()
-        probe.enable()
-        logging.info("Blackfire Enabled!")
+        BLACKFIRE_ENABLED = False
+
 
     logging.info("Loading data files, please wait ...")
     # TODO Import it in another class
@@ -47,7 +52,7 @@ def _launch(parser: Parser):
     if parser.test:
         server.run_test()
         return
-    server.start()
+    server.start(config['ip'], config['port'])
 
     # End Network stuff
     server.stop()
@@ -61,7 +66,7 @@ def main():
     parser = Parser()
 
     if parser.debug:
-        print('Debug mode enabled. Don\'t forget to remove debug flag for maximum performance !')
+        logging.info('Debug mode enabled. Don\'t forget to remove debug flag for maximum performance !')
     logging_level = logging.DEBUG if parser.debug else logging.INFO
     logging.basicConfig(level=logging_level, format=parser.format, force=True)
 

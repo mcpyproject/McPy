@@ -18,18 +18,10 @@ class ConfigParser:
     :raises Exceptions.UnsupportedConfigType: if _type is not between 1 and 2
     """
 
-    def __init__(self, config_location, _type: int = 1):
+    def __init__(self, _type: int = 1):
+        config_location = 'server_properties.yaml'
         if not isfile(config_location):
             raise Exceptions.NotAFileError
-        if not 0 < _type < 2:
-            raise Exceptions.UnsupportedConfigType
-        self.config_location = config_location
-        self.config = None
-        self.type = _type
-
-    def __iter__(self):
-        for i in self.config:
-            yield i
 
     def __enter__(self):
         self.load_config()
@@ -38,28 +30,31 @@ class ConfigParser:
     def __exit__(self):
         pass
 
-    def load_config(self):
+    def load_config(type):
         """
         Loads config that was defined when created
         :return: Config
         :raises Exceptions.FormattingError: if a exceptions is created by the loaders
         """
-        if self.type == 1:
-            with open(self.config_location, "r") as cf:
+        config_location = 'server_properties.yaml'
+        if not isfile(config_location):
+            raise Exceptions.NotAFileError
+        if type == 1:
+            with open(config_location, "r") as cf:
                 try:
-                    self.config = yaml.safe_load(
+                    config = yaml.safe_load(
                         cf)  # Use safe_load instead of load to keep arbitrary Python code from being executed
                 except yaml.YAMLError as e:
                     raise Exceptions.FormattingError(e)
-        elif self.type == 2:
-            with open(self.config_location, "r") as cf:
+        elif type == 2:
+            with open(config_location, "r") as cf:
                 try:
-                    self.config = json.loads(cf.read())
+                    config = json.loads(cf.read())
                 except json.JSONDecodeError as e:
                     raise Exceptions.FormattingError(e)
         else:
             raise Exceptions.UnsupportedConfigType
-        return self.config
+        return config
 
     def reload_config(self):
         """
