@@ -65,7 +65,4 @@ def _launch(parser: Parser):
 def main():
     parser = Parser()
 
-    if parser.debug:
-        logging.info('Debug mode enabled. Don\'t forget to remove debug flag for maximum performance !')
-
     _launch(parser)
