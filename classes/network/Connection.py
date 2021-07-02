@@ -1,3 +1,4 @@
+import builtins
 import logging
 import multiprocessing
 import threading
@@ -17,7 +18,11 @@ from .PacketType import BasicNetwork, PacketType, PacketTypeInput
 from .versions.v578 import v1_15_2, v1_15_2_Input
 from classes.utils.Config import ConfigParser
 
+
+from classes.plugins import event
 config = ConfigParser.load_config(1)
+
+event.registerEvent("chat")
 
 class PlayerNetwork(server.ServerProtocol):
 
@@ -89,8 +94,19 @@ class PlayerNetwork(server.ServerProtocol):
         p_text = buff.unpack_string()
         message = "<{0}> {1}".format(self.display_name, p_text)
         logging.info(message)
-        NetworkController.send_packet(packet_type=PacketType.CHAT_MESSAGE,
-                                      message=message)
+        out = event.fire("chat",self.display_name,p_text)
+        delete_invocation = False
+        for o in out:
+            try:
+                if o[0]:
+                    delete_invocation = o[0]
+            except builtins.TypeError:
+                if o:
+                    delete_invocation = o
+        if delete_invocation:
+            pass
+        else:
+            NetworkController.send_packet(packet_type=PacketType.CHAT_MESSAGE,message=message)
 
     def add_packet(self, packet_type: PacketType, data):
         """

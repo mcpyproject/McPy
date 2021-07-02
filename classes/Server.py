@@ -9,6 +9,7 @@ from .network.Connection import NetworkController
 from .network.PacketType import PacketType
 from .player.Player import PlayerManager
 from .utils.Scheduler import SchedulerManager
+from . import plugins
 
 class Server:
     entity_manager: EntityManager
@@ -35,6 +36,8 @@ class Server:
             return
         logging.info('Launching server ...')
         self.started = True
+        logging.info('Loading Plugins ...')
+        plugins.load_plugins()
         logging.info('Launching processes ...')
         self.multi_processing.start()
         NetworkController.start_process(self, host, port)
@@ -93,6 +96,8 @@ class Server:
     def stop(self):
         logging.info("Stopping server ...")
         self.started = False
+        logging.info("Unloading plugins ...")
+        plugins.unload_plugins()
         NetworkController.stop_process()
         # Stop multi_processing after 5 seconds
         self.multi_processing.stop(5000)
