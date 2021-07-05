@@ -13,8 +13,10 @@ McPy/
 libs/
 /plugins/
 /classes/plugins/events.pickle
+/minecraft-data/
 
 # Eclipse files
 .project
 .pydevproject
 .settings/
+
