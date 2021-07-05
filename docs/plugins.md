@@ -37,9 +37,11 @@ There are 3 functions in this api
     takes a `event` and arguments and runs all functions attached with the arguments and returns a list containg all outputs from all called functions
 
 there are some default events that get registered automatically
-`chat` - this event is fired every time a player uses chat 
-    passes 2 arguments `name: str` which is the players name and `message: str` which is the players message
-    if a value `True` is returned from *any* event function the message will not be sent into chat
+
+`chat` - this event is fired every time a player uses chat
+
+passes 2 arguments `name: str` which is the players name and `message: str` which is the players message
+if a value `True` is returned from *any* event function the message will not be sent into chat
 
 ## api
 [source](/classes/plugins/api.py)
