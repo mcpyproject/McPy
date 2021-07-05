@@ -1,4 +1,3 @@
-from multiprocessing import Array
 import os
 import builtins
 import logging
@@ -44,7 +43,7 @@ def register(event: str,func: typing.Callable):
         _events_[event].append(func)
     _save_(_events_)
 
-def fire(event: str,*args,**kwargs) -> Array:
+def fire(event: str,*args,**kwargs) -> list:
     import traceback
     _events_ = _load_()
     ret = []
