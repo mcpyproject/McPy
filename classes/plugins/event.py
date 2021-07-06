@@ -9,7 +9,7 @@ def _save_(events):
     with open(f'{folder}/events.pickle',"wb") as file:
         pickle.dump(events,file,protocol=_pickleLevel_)
 
-def _load_():
+def _getEvents_():
     folder = os.path.dirname(os.path.realpath(__file__))
     try:
         with open(f'{folder}/events.pickle',"rb") as file:
@@ -21,33 +21,31 @@ def _reset_():
     with open(f'{folder}/events.pickle',"wb") as file:
         pickle.dump({},file,protocol=_pickleLevel_)
 
-_events_ = {}
-
 def registerEvent(name: str):
-    _events_ = _load_()
+    events = _getEvents_()
     try:
-        tmp = _events_[name]
+        tmp = events[name]
         logging.info(f"event '{name}' was allready registered")
     except KeyError:
         logging.info(f"registering event '{name}'")
-        _events_[name] = []
-    _save_(_events_)
+        events[name] = []
+    _save_(events)
 
 def register(event: str,func: typing.Callable):
-    _events_ = _load_()
+    events = _getEvents_()
     try:
-        _events_[event].append(func)
+        events[event].append(func)
     except KeyError:
         registerEvent(event)
-        _events_ = _load_()
-        _events_[event].append(func)
-    _save_(_events_)
+        events = _getEvents_()
+        events[event].append(func)
+    _save_(events)
 
 def fire(event: str,*args,**kwargs) -> list:
     import traceback
-    _events_ = _load_()
+    events = _getEvents_()
     ret = []
-    for func in _events_[event]:
+    for func in events[event]:
         try:
             ret.append(func(*args,**kwargs))
         except builtins.TypeError:
