@@ -3,7 +3,8 @@ import builtins
 import logging
 import pickle
 import typing
-_pickleLevel_ = 5 #pickle level to use when comprssing and storing events
+import inspect
+_pickleLevel_ = 5 #pickle level to use when compressing and storing events
 def _save_(events):
     folder = os.path.dirname(os.path.realpath(__file__))
     with open(f'{folder}/events.pickle',"wb") as file:
@@ -46,9 +47,19 @@ def fire(event: str,*args,**kwargs) -> list:
     events = _getEvents_()
     ret = []
     for func in events[event]:
-        try:
+        funcArgs = inspect.signature(func).parameters
+        hasArgs = False
+        hasKwargs = False
+        for k in funcArgs:
+            param = funcArgs[k]
+            if param.kind == param.VAR_POSITIONAL:
+                logging.debug("function has *args")
+                hasArgs = True
+            if param.kind == param.VAR_KEYWORD:
+                logging.debug("function has **kwargs")
+                hasKwargs = True
+        if ((len(args) + len(kwargs)) == len(funcArgs)) or hasArgs or hasKwargs:
             ret.append(func(*args,**kwargs))
-        except builtins.TypeError:
-            print(traceback.format_exc())
-            logging.error(f"a plugin connected to event '{event}' forgot to use *args and **kwargs")
+        else:
+            logging.error(f"a plugin connected to event '{event}' takes a incorrect amount of arguments: expected {len(args)+len(kwargs)} got {len(funcArgs)}")
     return ret
