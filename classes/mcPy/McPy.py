@@ -49,6 +49,8 @@ def _launch(parser: Parser):
 
     # Here starts the server :D
     server = Server.Server(parser, avail_cores)
+    if parser.debug:
+        logging.basicConfig(level=logging.DEBUG, format='[%(asctime)s - %(levelname)s - %(threadName)s] %(message)s', force=True)
     if parser.test:
         server.run_test()
         return
