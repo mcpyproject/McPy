@@ -18,10 +18,9 @@ from .PacketType import BasicNetwork, PacketType, PacketTypeInput
 from .versions.v578 import v1_15_2, v1_15_2_Input
 from classes.utils.Config import ConfigParser
 
-
-from classes.plugins import event
 config = ConfigParser.load_config(1)
 
+from classes.plugins import event
 event.registerEvent("chat")
 
 class PlayerNetwork(server.ServerProtocol):
