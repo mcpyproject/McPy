@@ -26,18 +26,18 @@ def _getPlugins_() -> Array:
     for plugin_name in plugins:
         plugin = plugins[plugin_name]
         try:
-            tmp = order[plugin.PRIORITY]
+            tmp = order[int(plugin.PRIORITY)]
         except KeyError:
-            order[plugin.PRIORITY] = []
+            order[int(plugin.PRIORITY)] = []
         except AttributeError:
             plugin.PRIORITY = 999
-        order[plugin.PRIORITY].append(plugin)
+        order[int(plugin.PRIORITY)].append(plugin)
     max = 0
     for p in order:
         plug = order[p]
         for i in plug:
-            if i.PRIORITY > max:
-                max = i.PRIORITY
+            if int(i.PRIORITY) > max:
+                max = int(i.PRIORITY)
     ret = []
     for i in range(max+1):
         ret.append(None)

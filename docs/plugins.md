@@ -12,7 +12,9 @@ the `load` function will be called upon server startup
 in the `load` function you should register functions to events (see `event.register`, `event.register`)
 
 optionally you can include a `unload` function which will be called when the server is shutting down
-also you can include a `PRIORITY` variable which is a int `PRIORITY` 0 will be loaded first 1 second so on so forth
+
+also you can include a `PRIORITY` variable which is a int `PRIORITY` 0 will be loaded first 1 second so on so forth defaults to `999` if not set
+
 # plugin api
 The plugins sytem consist of two main parts
 1. event (classes.plugins.event)
