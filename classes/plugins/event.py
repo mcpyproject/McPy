@@ -17,6 +17,7 @@ def _getEvents_():
             return pickle.load(file)
     except FileNotFoundError:
         return {}
+        
 def _reset_():
     folder = os.path.dirname(os.path.realpath(__file__))
     with open(f'{folder}/events.pickle',"wb") as file:

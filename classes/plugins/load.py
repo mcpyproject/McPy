@@ -22,18 +22,39 @@ def _getPlugins_() -> Array:
         if plugin_name.startswith("_"):
             next
         plugins[plugin_name] = importlib.import_module(module.name)
-    return plugins
+    order = {}
+    for plugin_name in plugins:
+        plugin = plugins[plugin_name]
+        try:
+            tmp = order[plugin.PRIORITY]
+        except KeyError:
+            order[plugin.PRIORITY] = []
+        except AttributeError:
+            plugin.PRIORITY = 999
+        order[plugin.PRIORITY].append(plugin) 
+    return order
 
 def load_plugins():
     event._reset_()
     plugins = _getPlugins_()
-    for plugin_name in plugins:
-        imported = plugins[plugin_name]
-        if inspect.isfunction(getattr(imported, "load", None)):
-            imported.load()
-            logging.info(f"loaded plugin \"{plugin_name}\"")
+    logging.debug(plugins)
+    for priority_num in plugins:
+        priority = plugins[priority_num]
+        if type(priority) != type(event):
+            for plugin_name in priority:
+                imported = plugin_name
+                if inspect.isfunction(getattr(imported, "load", None)):
+                    imported.load()
+                    logging.info(f"loaded plugin \"{plugin_name}\"")
+                else:
+                    logging.info(f"couldn't load {plugin_name} because 'load' is not a function or doesen't exist")
         else:
-            logging.info(f"couldn't load {plugin_name} because 'load' is not a function or doesen't exist")
+            imported = priority
+            if inspect.isfunction(getattr(imported, "load", None)):
+                imported.load()
+                logging.info(f"loaded plugin \"{priority.__name__}\"")
+            else:
+                logging.info(f"couldn't load {priority} because 'load' is not a function or doesen't exist")
     logging.info("finished loading plugins")
 
 #called when server is shutting down

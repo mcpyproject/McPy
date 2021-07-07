@@ -17,11 +17,9 @@ from .IncomingPacketAction import ServerAction, ServerActionType
 from .PacketType import BasicNetwork, PacketType, PacketTypeInput
 from .versions.v578 import v1_15_2, v1_15_2_Input
 from classes.utils.Config import ConfigParser
+from classes.plugins import event
 
 config = ConfigParser.load_config(1)
-
-from classes.plugins import event
-event.registerEvent("chat")
 
 class PlayerNetwork(server.ServerProtocol):
 
@@ -94,15 +92,15 @@ class PlayerNetwork(server.ServerProtocol):
         message = "<{0}> {1}".format(self.display_name, p_text)
         logging.info(message)
         out = event.fire("chat",self.display_name,p_text)
-        delete_invocation = False
+        supress_packet = False
         for o in out:
             try:
                 if o[0]:
-                    delete_invocation = o[0]
+                    supress_packet = o[0]
             except builtins.TypeError:
                 if o:
-                    delete_invocation = o
-        if delete_invocation:
+                    supress_packet = o
+        if supress_packet:
             pass
         else:
             NetworkController.send_packet(packet_type=PacketType.CHAT_MESSAGE,message=message)
