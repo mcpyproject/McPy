@@ -68,3 +68,10 @@ def fire(event: str,*args,**kwargs) -> list:
         else:
             logging.error(f"a plugin connected to event '{event}' takes a incorrect amount of arguments: expected {len(args)+len(kwargs)} got {len(funcArgs)}")
     return ret
+
+def getEvents() -> list:
+    events = _getEvents_()
+    eventsList = []
+    for event in events:
+        eventsList.append(event)
+    return eventsList
