@@ -35,13 +35,15 @@ There are 3 functions in this api
 * `event.fire(event: str,*args,**kwargs) -> list`
 
     takes a `event` and arguments and runs all functions attached with the arguments and returns a list containg all outputs from all called functions, creates event if it doesn't exist via `registerEvent()`
+* `event.getEvents() -> list`
 
-there are some default events that get registered automatically
+    returns a `list` of registered events
 
-`chat` - this event is fired every time a player uses chat
+there are some default events that get registered/called in McPy
 
-passes 2 arguments `name: str` which is the players name and `message: str` which is the players message
-if a value `True` is returned from *any* event function the message will not be sent into chat
+`chat(player_username: str,chat_message: str)`* - this event is fired every time a player uses chat, if `true` is returned from *any* function connected to this event the message will not be sent in chat
+
+*bugged isn't registered until fired, you can still register for event for when it does fire
 
 ## api
 [source](/classes/plugins/api.py)
