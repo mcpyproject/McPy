@@ -62,7 +62,7 @@ logging.info("finished loading plugins")
 
 #called when server is shutting down
 def unload_plugins():
-    plugins = _getPlugins_()
+    plugins = reversed(_getPlugins_())
     logging.debug(plugins)
     for arr in plugins:
         if arr != None:
