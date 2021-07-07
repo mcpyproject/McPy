@@ -31,10 +31,10 @@ There are 3 functions in this api
     creates a new event which can have functions assigned to it via event.register()
 * `event.register(event: str,func: typing.Callable)`
 
-    registers function (func) to event (event) which will be called when ever the event is called via event.fire()
+    registers function (func) to event (event) which will be called when ever the event is called via event.fire(), creates event if it doesn't exist via `registerEvent()`
 * `event.fire(event: str,*args,**kwargs) -> list`
 
-    takes a `event` and arguments and runs all functions attached with the arguments and returns a list containg all outputs from all called functions
+    takes a `event` and arguments and runs all functions attached with the arguments and returns a list containg all outputs from all called functions, creates event if it doesn't exist via `registerEvent()`
 
 there are some default events that get registered automatically
 

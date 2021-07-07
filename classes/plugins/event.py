@@ -46,7 +46,12 @@ def fire(event: str,*args,**kwargs) -> list:
     import traceback
     events = _getEvents_()
     ret = []
-    for func in events[event]:
+    try:
+        tmp = events[event]
+    except KeyError:
+        registerEvent(event)
+        tmp = _getEvents_()[event]
+    for func in tmp:
         funcArgs = inspect.signature(func).parameters
         hasArgs = False
         hasKwargs = False
