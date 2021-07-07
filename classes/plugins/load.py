@@ -63,11 +63,13 @@ logging.info("finished loading plugins")
 #called when server is shutting down
 def unload_plugins():
     plugins = _getPlugins_()
+    logging.debug(plugins)
     for arr in plugins:
-        for imported in arr:
-            if inspect.isfunction(getattr(imported, "unload", None)):
-                imported.unload()
-                logging.info(f"unloaded plugin '{imported.__name__}'")
-            else:
-                logging.info(f"unloaded plugin '{imported.__name__}' (plugin has no 'unload' function)")
+        if arr != None:
+            for imported in arr:
+                if inspect.isfunction(getattr(imported, "unload", None)):
+                    imported.unload()
+                    logging.info(f"unloaded plugin '{imported.__name__}'")
+                else:
+                    logging.info(f"unloaded plugin '{imported.__name__}' (plugin has no 'unload' function)")
     event._reset_()
