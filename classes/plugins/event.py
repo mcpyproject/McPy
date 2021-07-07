@@ -71,8 +71,4 @@ def fire(event: str,*args,**kwargs) -> list:
     return ret
 
 def getEvents() -> list:
-    events = _getEvents_()
-    eventsList = []
-    for event in events:
-        eventsList.append(event)
-    return eventsList
+    return _getEvents_().keys()
