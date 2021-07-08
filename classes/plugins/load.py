@@ -32,12 +32,9 @@ def _getPlugins_() -> Array:
         except AttributeError:
             plugin.PRIORITY = 999
         order[int(plugin.PRIORITY)].append(plugin)
-    max = 0
-    for p in order:
-        plug = order[p]
-        for i in plug:
-            if int(i.PRIORITY) > max:
-                max = int(i.PRIORITY)
+    max = max(order.values().PRIORITY)
+    for key, val in dict.items():
+        other[key] = do_something(val)
     ret = []
     for i in range(max+1):
         ret.append(None)
