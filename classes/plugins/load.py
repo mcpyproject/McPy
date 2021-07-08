@@ -15,7 +15,7 @@ def _getPlugins_() -> Array:
 
     def unqualify(name: str) -> str:
         """Return an unqualified name given a qualified module/package `name`."""
-        return name.rsplit(".", maxsplit=1)[-1]
+        return name.rsplit(".", highest_prioritysplit=1)[-1]
     plugins = {}
     for module in pkgutil.walk_packages(exts.__path__, f"{exts.__name__}."):
         plugin_name = unqualify(module.name)
@@ -32,11 +32,14 @@ def _getPlugins_() -> Array:
         except AttributeError:
             plugin.PRIORITY = 999
         order[int(plugin.PRIORITY)].append(plugin)
-    max = max(order.values().PRIORITY)
-    for key, val in dict.items():
-        other[key] = do_something(val)
+    highest_priority = 0
+    for p in order:
+        plug = order[p]
+        for i in plug:
+            if int(i.PRIORITY) > highest_priority:
+                highest_priority = int(i.PRIORITY)
     ret = []
-    for i in range(max+1):
+    for i in range(highest_priority+1):
         ret.append(None)
     for p in order:
         ret[p] = order[p]
