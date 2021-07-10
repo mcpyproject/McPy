@@ -6,8 +6,10 @@ from . import event
 import os
 import logging
 import inspect
+import time
 
 def _getPlugins_() -> list:
+    timer_start = time.time()
     import pkgutil
     import importlib
     os.makedirs("plugins/", exist_ok=True)
@@ -55,12 +57,13 @@ def _getPlugins_() -> list:
             continue
         for plugin in prior:
             ret.append(plugin)
+    timer_stop = time.time()
+    logging.debug(f"took {timer_stop - timer_start} to create {highest_priority} indexes and load {len(ret)} plugins")
     return ret
 
 def load_plugins():
     event._reset_()
     plugins = _getPlugins_()
-    logging.debug(plugins)
     for imported in plugins:
         if inspect.isfunction(getattr(imported, "load", None)):
             imported.load()
@@ -72,7 +75,6 @@ def load_plugins():
 #called when server is shutting down
 def unload_plugins():
     plugins = reversed(_getPlugins_())
-    logging.debug(plugins)
     for imported in plugins:
         if inspect.isfunction(getattr(imported, "unload", None)):
             imported.unload()
