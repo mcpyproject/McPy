@@ -58,7 +58,7 @@ def _getPlugins_() -> list:
         for plugin in prior:
             ret.append(plugin)
     timer_stop = time.time()
-    logging.debug(f"took {timer_stop - timer_start} to create {highest_priority} indexes and load {len(ret)} plugins")
+    logging.debug(f"took {timer_stop - timer_start} to create {highest_priority} indexes and index {len(ret)} plugins")
     return ret
 
 def load_plugins():
