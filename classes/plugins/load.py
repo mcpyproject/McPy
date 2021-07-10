@@ -1,4 +1,5 @@
-from multiprocessing import Array
+import collections
+
 from . import api
 from . import event
 
@@ -6,29 +7,26 @@ import os
 import logging
 import inspect
 
-def _getPlugins_() -> Array:
+def _getPlugins_() -> list:
     import pkgutil
     import importlib
-    if not (os.path.exists('plugins/')):
-        os.mkdir('plugins/')
+    os.makedirs("plugins/", exist_ok=True)
     import plugins as exts
 
     def unqualify(name: str) -> str:
         """Return an unqualified name given a qualified module/package `name`."""
-        return name.rsplit(".", highest_prioritysplit=1)[-1]
+        return name.rsplit(".")[-1]
     plugins = {}
     for module in pkgutil.walk_packages(exts.__path__, f"{exts.__name__}."):
         plugin_name = unqualify(module.name)
         if plugin_name.startswith("_"):
-            next
+            continue
         plugins[plugin_name] = importlib.import_module(module.name)
-    order = {}
+    order = collections.defaultdict(list)
     for plugin_name in plugins:
         plugin = plugins[plugin_name]
         try:
             tmp = order[int(plugin.PRIORITY)]
-        except KeyError:
-            order[int(plugin.PRIORITY)] = []
         except AttributeError:
             plugin.PRIORITY = 999
         order[int(plugin.PRIORITY)].append(plugin)
