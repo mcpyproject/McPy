@@ -13,7 +13,5 @@ if sys.version_info < (3, 8):
 
 import classes
 
-logging.basicConfig(level=logging.INFO, format='[%(asctime)s - %(levelname)s - %(threadName)s] %(message)s', force=True)
-
 if __name__ == "__main__":
     classes.mcPy.main()
